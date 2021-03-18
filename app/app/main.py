@@ -8,7 +8,9 @@ app = FastAPI()
 
 #: Configure CORS
 origins = [
-    "http://localhost:8080",
+    "http://localhost:3000",
+    "https://torichan.app",
+    "https://tori-front.vercel.app",
 ]
 
 app.add_middleware(
