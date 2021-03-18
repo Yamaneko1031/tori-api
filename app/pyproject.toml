@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = ""
+authors = ["Yamane <candoanything1031@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.63.0"
+uvicorn = {extras = ["standard"], version = "^0.13.3"}
+google-cloud-firestore = "^2.0.2"
+mecab-python3 = "^1.0.3"
+unidic-lite = "^1.0.8"
+tweepy = "^3.10.0"
+
+[tool.poetry.dev-dependencies]
+autopep8 = "^1.5.5"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
