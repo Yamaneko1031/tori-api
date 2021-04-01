@@ -8,8 +8,6 @@ from datetime import datetime
 class BaseWord(BaseModel):
     word: str = ""
     mean: str = ""
-    tag_list: List[str] = []
-
 
 class WordCreate(BaseWord):
     pass
@@ -25,6 +23,13 @@ class WordAll(BaseWord):
     bad: int = 0
     cnt: int = 0
     kind: str = ""
+    tag1: List[str] = []
+    tag2: List[str] = []
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     tweeted_at: datetime = datetime(1, 1, 1)
+
+
+class WordAddTag(BaseModel):
+    word: str = ""
+    tag: str = ""

@@ -14,12 +14,15 @@ def disassemble(text):
             phraseCnt += 1
             part = node.feature.split(",")
             kind = ""
+            word = node.surface
 
             if (part[0] == "名詞"):
                 if(part[1] == "一般"):
                     kind = "名詞：一般"
                 elif(part[1] == "サ変接続"):
                     kind = "名詞：サ変接続"
+                elif(part[1] == "形容動詞語幹"):
+                    kind = "名詞：形容動詞"
                 elif(part[1] == "固有名詞"):
                     if(part[2] == "一般"):
                         kind = "名詞：一般"
@@ -36,9 +39,10 @@ def disassemble(text):
             elif (part[0] == "形容詞"):
                 if(part[1] == "自立"):
                     kind = "形容詞"
+                    word = part[6]
 
             if(kind != ""):
-                phraseList[node.surface] = kind
+                phraseList[word] = kind
                 # phraseList.append({"word": node.surface, "kind": kind})
 
         node = node.next

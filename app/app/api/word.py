@@ -1,11 +1,13 @@
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Request
 
 from app import models, services
 
 router = APIRouter()
-word_service = services.WordService()
+
+tag_service = services.tag_instance
+word_service = services.word_instance
 
 
 @router.post("/words", tags=["word"])
@@ -32,14 +34,37 @@ def get_word(word: str):
     return ret_word
 
 
-@router.put("/words/", response_model=models.WordAll, tags=["word"])
+@router.put("/words", response_model=models.WordAll, tags=["word"])
 def update_word(word_update: models.WordUpdate):
     """ 単語情報更新
     """
     ret_word = word_service.update(word_update)
     if not ret_word:
-        raise HTTPException(status_code=200, detail="unknown word.")
+        raise HTTPException(status_code=404, detail="unknown word.")
     return ret_word
+
+
+@router.put("/word_tag_add1", tags=["word"])
+def add_word_tag1(add_tag: models.WordAddTag):
+    """ 単語情報更新：タグ追加
+    """
+    #  word: str, tag: str
+    if not word_service.add_tag1(add_tag.word, add_tag.tag):
+        raise HTTPException(status_code=404, detail="Word not found.")
+    if not tag_service.use_tag(add_tag.tag, 0):
+        raise HTTPException(status_code=404, detail="Tag1 not found.")
+    return {"detail":"success"}
+
+
+@router.put("/word_tag_add2", tags=["word"])
+def add_word_tag1(word: str, tag: str):
+    """ 単語情報更新：タグ追加
+    """
+    if not word_service.add_tag2(word, tag):
+        raise HTTPException(status_code=404, detail="Word not found.")
+    if not tag_service.use_tag(tag, 1):
+        raise HTTPException(status_code=404, detail="Tag2 not found.")
+    return {"detail":"success"}
 
 
 @router.get("/word_session", tags=["word"])
@@ -56,7 +81,7 @@ def get_topic_taught(session_id: Optional[str] = Header(None)):
     """
     word = word_service.get_topic_taught(session_id)
     if not word:
-        raise HTTPException(status_code=200, detail="unknown")
+        raise HTTPException(status_code=200, detail="Not found.")
     return word
 
 
@@ -66,7 +91,7 @@ def get_topic_unknown():
     """
     unknown_data = word_service.get_topic_unknown()
     if not unknown_data:
-        raise HTTPException(status_code=200, detail="unknown")
+        raise HTTPException(status_code=200, detail="Not found.")
     return unknown_data
 
 
@@ -76,5 +101,13 @@ def get_topic_word(session_id: Optional[str] = Header(None)):
     """
     word = word_service.get_topic_word(session_id)
     if not word:
-        raise HTTPException(status_code=200, detail="unknown")
+        raise HTTPException(status_code=200, detail="Not found.")
     return word
+
+
+@router.post("/remembered_tweet", tags=["word"])
+def remembered_tweet():
+    """ 直近で覚えたワードについてツイートする
+    """
+    word_service.remembered_tweet()
+    return {"detail":"success"}

@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Body, HTTPException
 
 from app import models, services
-# from app.models import User, UserCreate, UserUpdate
-# from app.services import UserService
 
 router = APIRouter()
 user_service = services.UserService()

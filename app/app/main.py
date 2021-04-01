@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api import user, word, system
+from app.api import user, word, system, tag
 
 app = FastAPI()
 
@@ -22,5 +22,6 @@ app.add_middleware(
 )
 
 app.include_router(system.router)
+app.include_router(tag.router)
 app.include_router(user.router)
 app.include_router(word.router)
