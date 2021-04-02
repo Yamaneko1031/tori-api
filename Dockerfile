@@ -1,11 +1,11 @@
 FROM python:3.8-buster
 
-# RUN apt update && \
-#     apt install -y mecab libmecab-dev libmecab2 swig sudo mecab-ipadic-utf8
+RUN apt update && \
+    apt install -y mecab libmecab-dev libmecab2 swig sudo mecab-ipadic-utf8
     
-# RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git && \
-#     cd mecab-ipadic-neologd/ && \
-#     ./bin/install-mecab-ipadic-neologd -n -y
+RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git && \
+    cd mecab-ipadic-neologd/ && \
+    ./bin/install-mecab-ipadic-neologd -n -y
 
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python && \
     cd /usr/local/bin && \
