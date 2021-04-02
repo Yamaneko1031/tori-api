@@ -1,10 +1,6 @@
 # main.py
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-
-import sys
-sys.path.append('/app')
-
 from app.api import user, word, system, tag
 
 app = FastAPI()
