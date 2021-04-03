@@ -351,7 +351,7 @@ class WordService:
         """  直近で覚えたワードについてツイートする
         """
         docs = db.collection(self.collection_name).order_by(
-            u'tweeted_at', direction=firestore.Query.ASCENDING).limit(1).stream()
+            u'tweeted_at', direction=firestore.Query.DESCENDING).limit(1).stream()
 
         for doc in docs:
             doc_dict = doc.to_dict()
