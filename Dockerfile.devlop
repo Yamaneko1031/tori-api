@@ -22,6 +22,6 @@ EXPOSE 8080
 COPY ./app /app
 COPY muchan-*.json /home/
 
-COPY startup.sh /bin/startup.sh
-RUN chmod 744 /bin/startup.sh
-ENTRYPOINT ["startup.sh"]
+# COPY startup.sh /bin/startup.sh
+# RUN chmod 744 /bin/startup.sh
+# ENTRYPOINT ["startup.sh"]

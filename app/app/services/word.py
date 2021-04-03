@@ -351,15 +351,19 @@ class WordService:
         """  直近で覚えたワードについてツイートする
         """
         docs = db.collection(self.collection_name).order_by(
-            u'tweeted_at', direction=firestore.Query.DESCENDING).limit(1).stream()
+            u'created_at', direction=firestore.Query.DESCENDING).limit(1).stream()
 
         for doc in docs:
             doc_dict = doc.to_dict()
 
+        if not doc_dict:
+            print("remembered_tweet faild")
+            return
+
         if not self.ng_word_check(doc_dict["word"]):
             # ツイート内容生成
             msg = ("今「{}」って言葉を教えてもらったよ！\n"
-                   "意味は「{}」だよ！").format(doc_dict["word"], doc_dict["mean"])
+                   "「{}」のことだよ！").format(doc_dict["word"], doc_dict["mean"])
             # ツイートしたワードの情報更新
             data = {}
             data["tweeted_at"] = datetime.utcnow()
@@ -367,6 +371,8 @@ class WordService:
             doc._reference.update(data)
             # ツイート
             self.post_tweet(msg)
+        else:
+            print("remembered_tweet ng word")
 
     def known_word_tweet(self):
         """ 知っているワードについてツイートする
@@ -376,7 +382,7 @@ class WordService:
         doc_dict = ref.get().to_dict()
         # ツイート内容生成
         msg = ("むーちゃんは「{}」って言葉を知ってるよ！\n"
-               "「{}」っていう意味だよね！").format(doc_dict["word"], doc_dict["mean"])
+               "「{}」のことだよ！").format(doc_dict["word"], doc_dict["mean"])
         # ツイートしたワードの情報更新
         data = {}
         data["tweeted_at"] = datetime.utcnow()
