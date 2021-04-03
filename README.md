@@ -1,1 +1,1 @@
-# tori-api
+# torichan.appのバックエンド
