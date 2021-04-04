@@ -66,6 +66,14 @@ def add_word_tag2(add_tag: models.WordAddTag):
     return {"detail":"success"}
 
 
+@router.delete("/unknown/{word}", tags=["word"])
+def delete_unknown(word: str):
+    """ 知らない単語削除
+    """
+    word_service.delete_unknown(word)
+    return {"detail":"success"}
+
+
 @router.get("/word_session", tags=["word"])
 def get_session(session_id: Optional[str] = Header(None)):
     """ セッションID取得

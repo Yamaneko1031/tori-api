@@ -94,6 +94,18 @@ class WordService:
             return models.WordAll(**docs[0].to_dict())
         return
 
+    def delete_unknown(self, word: str):
+        """ 知らない単語情報削除
+        """
+        # unknownsコレクションにある場合は削除する
+        docs = db.collection(self.collection_unknown).where(
+            "word", "==", word).stream()
+        for doc in docs:
+            doc._reference.delete()
+            system_service.dec_unknown()
+
+        return
+
     def get_knowns_list(self, mean: str, teach_word: str = ""):
         """ 意味を分解して知ってる単語、知らない単語に分ける
             知らない単語はDBに追加される
@@ -185,7 +197,7 @@ class WordService:
                     "mean": ref["mean"],
                 }
             })
-        
+
         if not get_data_list:
             return
 
@@ -264,7 +276,7 @@ class WordService:
                 "updated_at": datetime.utcnow(),
             }, merge=True)
             return True
-            
+
         return False
 
     def get_session(self, session_id: str):
