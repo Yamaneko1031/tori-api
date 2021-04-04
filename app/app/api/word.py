@@ -48,7 +48,6 @@ def update_word(word_update: models.WordUpdate):
 def add_word_tag1(add_tag: models.WordAddTag):
     """ 単語情報更新：タグ追加
     """
-    #  word: str, tag: str
     if not word_service.add_tag1(add_tag.word, add_tag.tag):
         raise HTTPException(status_code=404, detail="Word not found.")
     if not tag_service.use_tag(add_tag.tag, 0):
@@ -57,13 +56,13 @@ def add_word_tag1(add_tag: models.WordAddTag):
 
 
 @router.put("/word_tag_add2", tags=["word"])
-def add_word_tag1(word: str, tag: str):
+def add_word_tag2(add_tag: models.WordAddTag):
     """ 単語情報更新：タグ追加
     """
-    if not word_service.add_tag2(word, tag):
+    if not word_service.add_tag2(add_tag.word, add_tag.tag):
         raise HTTPException(status_code=404, detail="Word not found.")
-    if not tag_service.use_tag(tag, 1):
-        raise HTTPException(status_code=404, detail="Tag2 not found.")
+    if not tag_service.use_tag(add_tag.tag, 1):
+        raise HTTPException(status_code=404, detail="Tag1 not found.")
     return {"detail":"success"}
 
 
