@@ -12,6 +12,7 @@ google-cloud-firestore = "^2.0.2"
 mecab-python3 = "^1.0.3"
 unidic-lite = "^1.0.8"
 tweepy = "^3.10.0"
+jaconv = "^0.3"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.5"

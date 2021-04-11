@@ -27,14 +27,17 @@ def disassemble(text):
                     if(part[2] == "一般"):
                         kind = "名詞：一般"
                     elif(part[2] == "人名"):
-                        kind = "名詞：人名"
+                        # kind = "名詞：人名"
+                        pass
                     elif(part[2] == "地域"):
                         if(part[3] == "国"):
                             kind = "名詞：国"
                         elif(part[3] == "組織"):
-                            kind = "名詞：一般"
+                            # kind = "名詞：一般"
+                            pass
                         else:
-                            kind = "名詞：地域"
+                            # kind = "名詞：地域"
+                            pass
 
             elif (part[0] == "形容詞"):
                 if(part[1] == "自立"):

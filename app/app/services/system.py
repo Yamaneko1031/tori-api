@@ -9,6 +9,17 @@ db = firestore.Client()
 class SystemService:
     collection_name = "system"
 
+    def add_system_cnt(self, key):
+        doc_ref = db.collection(self.collection_name).document("TOTAL")
+        doc_ref.set({
+            key: firestore.Increment(1),
+        }, merge=True)
+        doc_ref = db.collection(
+            self.collection_name).document(datetime.today().strftime("%y-%m-%d"))
+        doc_ref.set({
+            key: firestore.Increment(1),
+        }, merge=True)
+
     def get_system_data(self):
         doc = db.collection(
             self.collection_name).document("TOTAL").get()
@@ -86,14 +97,13 @@ class SystemService:
         }, merge=True)
 
     def add_ng_list(self, word):
-        doc_ref = db.collection("system").document("NG_LIST")
+        doc_ref = db.collection(self.collection_name).document("NG_LIST")
         doc_ref.set({
             "negative": firestore.ArrayUnion([word])
         }, merge=True)
 
     def get_ng_list(self):
-        doc = db.collection("system").document("NG_LIST").get()
+        doc = db.collection(self.collection_name).document("NG_LIST").get()
         return doc.to_dict()["negative"]
-
 
 system_instance = SystemService()

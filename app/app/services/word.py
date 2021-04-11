@@ -3,6 +3,8 @@ import random
 import logging
 from uuid import uuid4
 from datetime import datetime
+from typing import List
+import re
 
 import tweepy
 from google.cloud.firestore_v1.transaction import Transaction
@@ -22,35 +24,47 @@ auth.set_access_token(os.environ['ACCESS_TOKEN'],
 
 tweet_api = tweepy.API(auth)
 
-# system_service = services.SystemService()
+tag_service = services.tag_instance
 system_service = services.system_instance
 
 
 @firestore.transactional
-def create_tr(transaction: Transaction, word_create: models.WordCreate, taught: str,
-              colect_word: str, colect_unknown: str, colect_session: str
+def create_tr(transaction: Transaction, word_create: models.WordCreate, tags: List[models.TagAct], taught: str,
+              collect_word: str, collect_unknown: str, collect_session: str
               ):
     """ 新規単語の追加で呼び出すトランザクション処理
     """
     # unknownsコレクションにある場合は削除する
-    docs = db.collection(colect_unknown).where(
+    docs = db.collection(collect_unknown).where(
         "word", "==", word_create.word).stream()
     for doc in docs:
         transaction.delete(doc._reference)
         system_service.dec_unknown()
 
+    set_like = 0
+    set_tags = []
+    set_tags_cnt = {}
+    for tag in tags:
+        set_tags.append(tag["text"])
+        set_tags_cnt[tag["text"]] = firestore.Increment(1)
+        set_like = set_like + tag["pnt"]
+
     # wordsコレクションに追加
     word_data = models.WordAll(**word_create.dict()).dict()
     word_data["taught"] = taught
-    word_ref = db.collection(colect_word).document()
+    word_data["like"] = set_like
+    word_data["tags"] = set_tags
+    word_data["tags_cnt"] = set_tags_cnt
+    word_data["cnt"] = firestore.Increment(1)
+    word_ref = db.collection(collect_word).document()
     transaction.set(word_ref, word_data)
 
     # sessionsコレクション更新
     session_ref = db.collection(
-        colect_session).document(document_id=taught)
+        collect_session).document(document_id=taught)
     session_data = {
         "teach_words": firestore.ArrayUnion([word_create.word]),
-        "teach_Refs": firestore.ArrayUnion([word_ref]),
+        "teach_refs": firestore.ArrayUnion([word_ref]),
         "teach_cnt": firestore.Increment(1),
     }
     transaction.set(session_ref, session_data, merge=True)
@@ -74,16 +88,22 @@ class WordService:
     def create(self, word_create: models.WordCreate, taught: str) -> models.WordAll:
         """ 新規単語の追加
         """
+        retData = self.get_knowns_list(
+            mean=word_create.mean, teach_word=word_create.word)
+
         transaction = db.transaction()
         ref = create_tr(transaction=transaction,
                         word_create=word_create,
                         taught=taught,
-                        colect_word=self.collection_name,
-                        colect_unknown=self.collection_unknown,
-                        colect_session=self.collection_session
+                        tags=retData["tags"],
+                        collect_word=self.collection_name,
+                        collect_unknown=self.collection_unknown,
+                        collect_session=self.collection_session
                         )
         system_service.add_word_create(word_create.word)
-        return models.WordAll(**ref.get().to_dict())
+
+        retData["create"] = models.WordAll(**ref.get().to_dict())
+        return retData
 
     def get(self, word: str) -> models.WordAll:
         """ 単語情報取得
@@ -111,6 +131,8 @@ class WordService:
             知らない単語はDBに追加される
             知っている単語、知らない単語の中からランダムで一つ選んで返す
         """
+        # かな１文字判定用
+        re_kana_1char = re.compile(r'[あ-ん]|[ア-ン]')
         # 意味の中から認識可能な単語を取得
         phrase_list = morpheme.disassemble(mean)
 
@@ -119,13 +141,7 @@ class WordService:
 
         # teach_wordに値が入っている場合は参照情報を保存する
         if teach_word:
-            # 教えた単語の参照情報を取得
-            docs = db.collection(self.collection_name).where(
-                "word", "==", teach_word).limit(1).stream()
-
-            if docs:
-                for doc in docs:
-                    word_ref = doc._reference
+            word_ref = teach_word
         # teach_wordに値が入って無い場合は入力ワードをトレンド情報に保存する
         else:
             trend_word = mean
@@ -133,26 +149,35 @@ class WordService:
         # 知っている単語、知らない単語の一覧を作成
         known_list = []
         unknown_list = []
+        tag_list = []
         for key, value in phrase_list.items():
-            docs = db.collection(self.collection_name).where(
-                "word", "==", key).limit(1).get()
-            if docs:
-                known_list.append({"word": key, "kind": value})
+            tmp = tag_service.get_tag(key)
+            if re_kana_1char.fullmatch(key):
+                # かな1文字は除外
+                pass
+            elif tmp:
+                # タグに存在する物は別枠
+                tag_list.append(tmp)
             else:
-                unknown_list.append({"word": key, "kind": value})
-                unknown_ref = db.collection(
-                    self.collection_unknown).document(key)
-                unknown_ref.set({
-                    "word": key,
-                    "kind": value,
-                    "word_ref": word_ref,
-                    "trend": trend_word,
-                    "interest": firestore.Increment(1)
-                }, merge=True)
-                system_service.add_unknown(key)
+                docs = db.collection(self.collection_name).where(
+                    "word", "==", key).limit(1).get()
+                if docs:
+                    known_list.append({"word": key, "kind": value})
+                else:
+                    unknown_list.append({"word": key, "kind": value})
+                    unknown_ref = db.collection(
+                        self.collection_unknown).document(key)
+                    unknown_ref.set({
+                        "word": key,
+                        "kind": value,
+                        "word_ref": word_ref,
+                        "trend": trend_word,
+                        "interest": firestore.Increment(1)
+                    }, merge=True)
+                    system_service.add_unknown(key)
 
         # 知っている単語、知らない単語の中からランダムで一つ選んで返す
-        ret_data = {"known": 0, "unknown": 0}
+        ret_data = {"known": 0, "unknown": 0, "tags": tag_list}
         if known_list:
             ret_data["known"] = random.choice(known_list)
         if unknown_list:
@@ -182,12 +207,20 @@ class WordService:
 
         for doc in docs:
             unknown = doc.to_dict()
-            ref = {}
+            print(unknown)
+            ref = {
+                "word": "",
+                "mean": "",
+            }
             if unknown["word_ref"]:
-                ref = unknown["word_ref"].get().to_dict()
-            else:
-                ref["word"] = ""
-                ref["mean"] = ""
+                get_word = self.get(unknown["word_ref"])
+                print(get_word)
+                if get_word:
+                    ref["word"] = get_word.word
+                    ref["mean"] = get_word.mean
+                else:
+                    print("word_refの先が存在しない:{}:{}".format(
+                        doc.id, unknown["word_ref"]))
 
             get_data_list.append({
                 "word": unknown["word"],
@@ -249,33 +282,48 @@ class WordService:
                 "mean": mean,
                 "taught": taught,
                 "updated_at": datetime.utcnow(),
-            }, merge=True)
-
-    def add_tag1(self, word: str, tag: str):
-        """ タグ1追加
-        """
-        docs = db.collection(self.collection_name).where(
-            "word", "==", word).limit(1).get()
-        if docs:
-            docs[0]._reference.set({
-                "tag1": firestore.ArrayUnion([tag]),
-                "updated_at": datetime.utcnow(),
+                "cnt": firestore.Increment(1),
             }, merge=True)
             return True
-
         return False
 
-    def add_tag2(self, word: str, tag: str):
-        """ タグ2追加
+    def update_kind(self, word: str, kind: str):
+        """ 種別書き換え
         """
         docs = db.collection(self.collection_name).where(
             "word", "==", word).limit(1).get()
         if docs:
             docs[0]._reference.set({
-                "tag2": firestore.ArrayUnion([tag]),
+                "kind": kind,
                 "updated_at": datetime.utcnow(),
+                "cnt": firestore.Increment(1),
             }, merge=True)
             return True
+        return False
+
+    def add_tag(self, word: str, tag: str):
+        """ タグ追加
+        """
+        tag_data = tag_service.get_tag(tag)
+        if tag_data:
+            docs = db.collection(self.collection_name).where(
+                "word", "==", word).limit(1).get()
+
+            if docs:
+                set_data = {
+                    "tags": firestore.ArrayUnion([tag_data["text"]]),
+                    "tags_cnt": {
+                        tag_data["text"]: firestore.Increment(1)
+                    },
+                    "updated_at": datetime.utcnow(),
+                    "cnt": firestore.Increment(1),
+                }
+                # 初めてのタグはlikeに計算
+                if tag_data["text"] not in docs[0].to_dict()["tags"]:
+                    set_data["like"] = firestore.Increment(tag_data["pnt"])
+
+                docs[0]._reference.set(set_data, merge=True)
+                return True
 
         return False
 
@@ -310,11 +358,16 @@ class WordService:
 
         msg = ""
         for i in range(10):
+            # ローマ字のみの判定用
+            re_roma = re.compile(r'^[a-zA-Z]+$') #a-z:小文字、A-Z:大文字
             # トレンドワードからランダムで取得
             trend_word = random.choice(trends["trends"])["name"]
 
+            # ローマ字のみは除外
+            if re_roma.fullmatch(trend_word):
+                pass
             # NGワードチェック
-            if not self.ng_word_check(trend_word, 3):
+            elif not self.ng_word_check(trend_word, 3):
                 # ツイート内容の生成
                 ret_data = self.get_knowns_list(mean=trend_word)
                 if ret_data["unknown"]:

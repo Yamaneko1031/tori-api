@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 # from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -21,10 +21,11 @@ class WordUpdate(BaseWord):
 class WordAll(BaseWord):
     good: int = 0
     bad: int = 0
+    like: int = 0
     cnt: int = 0
     kind: str = ""
-    tag1: List[str] = []
-    tag2: List[str] = []
+    tags: List = []
+    tags_cnt: Dict = {}
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     tweeted_at: datetime = datetime(1, 1, 1)
@@ -33,3 +34,8 @@ class WordAll(BaseWord):
 class WordAddTag(BaseModel):
     word: str = ""
     tag: str = ""
+
+
+class WordUpdateKind(BaseModel):
+    word: str = ""
+    kind: str = ""

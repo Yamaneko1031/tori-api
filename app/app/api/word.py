@@ -17,11 +17,7 @@ def create_word(word_create: models.WordCreate, session_id: Optional[str] = Head
         知らない単語はDBに追加される
         知っている単語、知らない単語の中からランダムで一つ選んで返す
     """
-    create_data = word_service.create(word_create, session_id)
-    retData = word_service.get_knowns_list(
-        mean=word_create.mean, teach_word=word_create.word)
-    retData["create"] = create_data
-    return retData
+    return word_service.create(word_create, session_id)
 
 
 @router.get("/words/{word}", response_model=models.WordAll, tags=["word"])
@@ -34,8 +30,8 @@ def get_word(word: str):
     return ret_word
 
 
-@router.put("/words", response_model=models.WordAll, tags=["word"])
-def update_word(word_update: models.WordUpdate):
+@router.put("/word_mean", response_model=models.WordAll, tags=["word"])
+def update_word_mean(word_update: models.WordUpdate):
     """ 単語情報更新
     """
     ret_word = word_service.update(word_update)
@@ -44,25 +40,21 @@ def update_word(word_update: models.WordUpdate):
     return ret_word
 
 
-@router.put("/word_tag_add1", tags=["word"])
-def add_word_tag1(add_tag: models.WordAddTag):
+@router.put("/word_kind", tags=["word"])
+def update_word_kind(word_update: models.WordUpdateKind):
     """ 単語情報更新：タグ追加
     """
-    if not word_service.add_tag1(add_tag.word, add_tag.tag):
+    if not word_service.update_kind(word_update.word, word_update.kind):
         raise HTTPException(status_code=404, detail="Word not found.")
-    if not tag_service.use_tag(add_tag.tag, 0):
-        raise HTTPException(status_code=404, detail="Tag1 not found.")
     return {"detail":"success"}
 
 
-@router.put("/word_tag_add2", tags=["word"])
-def add_word_tag2(add_tag: models.WordAddTag):
+@router.put("/word_tag_add", tags=["word"])
+def add_word_tag(add_tag: models.WordAddTag):
     """ 単語情報更新：タグ追加
     """
-    if not word_service.add_tag2(add_tag.word, add_tag.tag):
+    if not word_service.add_tag(add_tag.word, add_tag.tag):
         raise HTTPException(status_code=404, detail="Word not found.")
-    if not tag_service.use_tag(add_tag.tag, 1):
-        raise HTTPException(status_code=404, detail="Tag1 not found.")
     return {"detail":"success"}
 
 
