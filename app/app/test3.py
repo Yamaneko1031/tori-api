@@ -18,6 +18,19 @@ system_service = services.system_instance
 word_service = services.word_instance
 tag_service = services.tag_instance
 
+# data = []
+# docs = db.collection("words").where("tags", "array_contains", "強い").stream()
+# for doc in docs:
+#     data.append(doc.to_dict()["word"])
+
+# if 2 <= len(data):
+#     print( data )
+
+# data = word_service.get_common_tag_word("空","大きい")
+# print( data )
+
+# word_service.add_tag_for_text("空","青くて大きくて自由で幸せなところ")
+
 # system_service.add_janken_win(0)
 # system_service.add_janken_lose(1)
 # system_service.add_janken_draw(2)

@@ -35,6 +35,9 @@ class WordAddTag(BaseModel):
     word: str = ""
     tag: str = ""
 
+class WordAddTagText(BaseModel):
+    word: str = ""
+    text: str = ""
 
 class WordUpdateKind(BaseModel):
     word: str = ""

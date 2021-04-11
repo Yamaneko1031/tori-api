@@ -114,6 +114,20 @@ class WordService:
             return models.WordAll(**docs[0].to_dict())
         return
 
+    def get_common_tag_word(self, word: str, tag: str) -> models.WordAll:
+        """ 共通タグの単語情報取得
+        """
+        data = []
+        docs = db.collection("words").where("tags", "array_contains", tag).stream()
+        for doc in docs:
+            if doc.to_dict()["word"] != word:
+                data.append(doc)
+
+        if data:
+            return models.WordAll(**random.choice(data).to_dict())
+            
+        return
+
     def delete_unknown(self, word: str):
         """ 知らない単語情報削除
         """
@@ -301,6 +315,34 @@ class WordService:
             return True
         return False
 
+    def add_good(self, word: str):
+        """ good加算
+        """
+        docs = db.collection(self.collection_name).where(
+            "word", "==", word).limit(1).get()
+        if docs:
+            docs[0]._reference.set({
+                "good": firestore.Increment(1),
+                "updated_at": datetime.utcnow(),
+                "cnt": firestore.Increment(1),
+            }, merge=True)
+            return True
+        return False
+
+    def add_bad(self, word: str):
+        """ bad加算
+        """
+        docs = db.collection(self.collection_name).where(
+            "word", "==", word).limit(1).get()
+        if docs:
+            docs[0]._reference.set({
+                "bad": firestore.Increment(1),
+                "updated_at": datetime.utcnow(),
+                "cnt": firestore.Increment(1),
+            }, merge=True)
+            return True
+        return False
+
     def add_tag(self, word: str, tag: str):
         """ タグ追加
         """
@@ -326,6 +368,17 @@ class WordService:
                 return True
 
         return False
+
+        
+    def add_tag_for_text(self, word: str, text: str):
+        """ 文章内からタグ追加
+            タグ一覧を返す
+        """
+        retData = self.get_knowns_list(mean=text, teach_word=word)
+        for tag in retData["tags"]:
+            self.add_tag(word, tag["text"])
+
+        return retData["tags"]
 
     def get_session(self, session_id: str):
         """ セッションID取得
@@ -438,6 +491,23 @@ class WordService:
             self.post_tweet(msg)
         else:
             print("remembered_tweet ng word")
+
+    def word_tag_add_tweet(self, word: str, tag: str):
+        """ タグ追加についてツイートする
+        """
+        msg = ""
+        tag_data = tag_service.get_tag(tag)
+        if tag_data:
+            if tag_data["part"] == "形容詞":
+                msg = ("{}は{}んだって！").format(word, tag)
+            elif tag_data["part"] == "形容動詞":
+                msg = ("{}は{}なんだって！").format(word, tag)
+
+        if msg:
+            self.post_tweet(msg)
+            return msg
+        else:
+            return
 
     def known_word_tweet(self):
         """ 知っているワードについてツイートする

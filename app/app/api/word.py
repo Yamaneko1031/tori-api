@@ -40,13 +40,33 @@ def update_word_mean(word_update: models.WordUpdate):
     return ret_word
 
 
+@router.put("/word_good/{word}", response_model=models.WordAll, tags=["word"])
+def update_word_good(word: str):
+    """ good加算
+    """
+    ret_word = word_service.add_good(word)
+    if not ret_word:
+        raise HTTPException(status_code=404, detail="unknown word.")
+    return {"detail": "success"}
+
+
+@router.put("/word_bad/{word}", response_model=models.WordAll, tags=["word"])
+def update_word_bad(word: str):
+    """ bad加算
+    """
+    ret_word = word_service.add_bad(word)
+    if not ret_word:
+        raise HTTPException(status_code=404, detail="unknown word.")
+    return {"detail": "success"}
+
+
 @router.put("/word_kind", tags=["word"])
 def update_word_kind(word_update: models.WordUpdateKind):
     """ 単語情報更新：タグ追加
     """
     if not word_service.update_kind(word_update.word, word_update.kind):
         raise HTTPException(status_code=404, detail="Word not found.")
-    return {"detail":"success"}
+    return {"detail": "success"}
 
 
 @router.put("/word_tag_add", tags=["word"])
@@ -55,7 +75,27 @@ def add_word_tag(add_tag: models.WordAddTag):
     """
     if not word_service.add_tag(add_tag.word, add_tag.tag):
         raise HTTPException(status_code=404, detail="Word not found.")
-    return {"detail":"success"}
+    return {"detail": "success"}
+
+
+@router.put("/word_tag_add_text", tags=["word"])
+def add_word_tag_text(add_tag: models.WordAddTagText):
+    """ 単語情報更新：文章内からタグ追加
+    """
+    data = word_service.add_tag_for_text(add_tag.word, add_tag.text)
+    if not data:
+        raise HTTPException(status_code=200, detail="Tag not found.")
+    return data
+
+
+@router.get("/common_tag_word", tags=["word"])
+def get_common_tag_word(word: str, tag: str):
+    """ 共通タグの単語情報取得
+    """
+    data = word_service.get_common_tag_word(word, tag)
+    if not data:
+        raise HTTPException(status_code=200, detail="Not found.")
+    return data
 
 
 @router.delete("/unknown/{word}", tags=["word"])
@@ -63,7 +103,7 @@ def delete_unknown(word: str):
     """ 知らない単語削除
     """
     word_service.delete_unknown(word)
-    return {"detail":"success"}
+    return {"detail": "success"}
 
 
 @router.get("/word_session", tags=["word"])
@@ -109,4 +149,14 @@ def remembered_tweet():
     """ 直近で覚えたワードについてツイートする
     """
     word_service.remembered_tweet()
-    return {"detail":"success"}
+    return {"detail": "success"}
+
+
+@router.post("/tag_add_tweet", tags=["word"])
+def tag_add_tweet(add_tag: models.WordAddTag):
+    """ タグ追加についてツイートする
+    """
+    if word_service.word_tag_add_tweet(add_tag.word, add_tag.tag):
+        return {"detail": "success"}
+    else:
+        raise HTTPException(status_code=404, detail="Tag not found.")
