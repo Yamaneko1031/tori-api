@@ -17,7 +17,10 @@ def create_word(word_create: models.WordCreate, session_id: Optional[str] = Head
         知らない単語はDBに追加される
         知っている単語、知らない単語の中からランダムで一つ選んで返す
     """
-    return word_service.create(word_create, session_id)
+    ret_data = word_service.create(word_create, session_id)
+    if not ret_data:
+        raise HTTPException(status_code=404, detail="word already.")
+    return ret_data
 
 
 @router.get("/words/{word}", response_model=models.WordAll, tags=["word"])
@@ -31,10 +34,10 @@ def get_word(word: str):
 
 
 @router.put("/word_mean", response_model=models.WordAll, tags=["word"])
-def update_word_mean(word_update: models.WordUpdate):
+def update_word_mean(word_update: models.WordUpdate, session_id: Optional[str] = Header(None)):
     """ 単語情報更新
     """
-    ret_word = word_service.update(word_update)
+    ret_word = word_service.update_mean(word_update.word, word_update.mean, session_id)
     if not ret_word:
         raise HTTPException(status_code=404, detail="unknown word.")
     return ret_word

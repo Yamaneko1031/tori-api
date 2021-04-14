@@ -9,10 +9,14 @@ import re
 import tweepy
 from google.cloud.firestore_v1.transaction import Transaction
 from google.cloud import firestore
+from pykakasi import kakasi
 
 from app.util import morpheme
 from app import models, services
 
+kakasi = kakasi()
+kakasi.setMode("J", "H")
+hira_conv = kakasi.getConverter()
 
 db = firestore.Client()
 logger = logging.getLogger(__name__)
@@ -91,18 +95,25 @@ class WordService:
         retData = self.get_knowns_list(
             mean=word_create.mean, teach_word=word_create.word)
 
-        transaction = db.transaction()
-        ref = create_tr(transaction=transaction,
-                        word_create=word_create,
-                        taught=taught,
-                        tags=retData["tags"],
-                        collect_word=self.collection_name,
-                        collect_unknown=self.collection_unknown,
-                        collect_session=self.collection_session
-                        )
-        system_service.add_word_create(word_create.word)
+        docs = db.collection(self.collection_name).where(
+            "word", "==", word_create.word).limit(1).get()
+        if docs:
+            self.update_mean(word_create.word, word_create.mean, taught)
+            ref = docs[0]._reference
+        else:
+            transaction = db.transaction()
+            ref = create_tr(transaction=transaction,
+                            word_create=word_create,
+                            taught=taught,
+                            tags=retData["tags"],
+                            collect_word=self.collection_name,
+                            collect_unknown=self.collection_unknown,
+                            collect_session=self.collection_session
+                            )
+            system_service.add_word_create(word_create.word)
 
         retData["create"] = models.WordAll(**ref.get().to_dict())
+
         return retData
 
     def get(self, word: str) -> models.WordAll:
@@ -172,6 +183,9 @@ class WordService:
             elif tmp:
                 # タグに存在する物は別枠
                 tag_list.append(tmp)
+            elif value == "形容動詞" or value == "形容詞":
+                kana = hira_conv.do(key)
+                tag_service.create_reserve_tags(key, value, 0, key, kana)
             else:
                 docs = db.collection(self.collection_name).where(
                     "word", "==", key).limit(1).get()

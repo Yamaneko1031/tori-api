@@ -2,6 +2,7 @@ from google.cloud import firestore
 from datetime import datetime
 import time
 import re
+from pykakasi import kakasi
 
 import sys
 
@@ -11,17 +12,40 @@ import services
 import models
 
 import jaconv
+from util import morpheme
 
 db = firestore.Client()
+
+kakasi = kakasi()
+kakasi.setMode("J", "H")
+conv = kakasi.getConverter()
 
 system_service = services.system_instance
 word_service = services.word_instance
 tag_service = services.tag_instance
 
+# data = {}
+# data = morpheme.disassemble("幸せでガタガタで美しくて素敵なひと")
+
+# for key, value in data.items():
+#     if value == "形容詞" or value == "形容動詞":
+#         kana = conv.do(key)
+#         print("{}:{}".format(key,kana))
+
+
+# word_create = models.WordCreate(word="パソコン",mean="高速に計算が出来て便利な機械。寂しい。")
+# ret = word_service.create(word_create,"aaaaaa")
+
+
+# tag_service.create_tag()
+
 # data = []
-# docs = db.collection("words").where("tags", "array_contains", "強い").stream()
+# docs = db.collection("words").stream()
 # for doc in docs:
 #     data.append(doc.to_dict()["word"])
+
+# print(data)
+
 
 # if 2 <= len(data):
 #     print( data )
@@ -977,6 +1001,9 @@ tag_service = services.tag_instance
 # print(key)
 # print(value)
 # doc_ref.set(value)
+
+
+
 
 # colection = db.collection("act_tags")
 # colection2 = db.collection("called_tags")

@@ -50,11 +50,37 @@ class TagService:
 
     #     return data
 
-    
     # def get_total_pnt(self, tags: List[str]) -> int:
     #     for tag in tags:
     #         get_tag()
 
+    def create_tag(self, base: str, part: str, pnt: int, text: str, kana: str):
+        colection_act = db.collection("act_tags")
+        colection_act.document(base).set({
+            "part": part,
+            "pnt": pnt,
+            "text": text
+        })
+
+        colection_called = db.collection("called_tags")
+        colection_called.document(base).set({
+            "refer": colection_act.document(base)
+        })
+        if base != kana:
+            colection_called.document(kana).set({
+                "refer": colection_act.document(base)
+            })
+
+            
+    def create_reserve_tags(self, base: str, part: str, pnt: int, text: str, kana: str):
+        colection_act = db.collection("reserve_tags")
+        colection_act.document(base).set({
+            "part": part,
+            "pnt": pnt,
+            "text": text,
+            "kana": kana
+        })
+        
 
     def get_tag(self, tag: str, get_ref: bool = False):
         """ タグの情報を取得する

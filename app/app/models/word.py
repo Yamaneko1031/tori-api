@@ -14,7 +14,6 @@ class WordCreate(BaseWord):
 
 
 class WordUpdate(BaseWord):
-    raiting: int
     pass
 
 

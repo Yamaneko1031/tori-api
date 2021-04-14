@@ -22,7 +22,7 @@ def disassemble(text):
                 elif(part[1] == "サ変接続"):
                     kind = "名詞：サ変接続"
                 elif(part[1] == "形容動詞語幹"):
-                    kind = "名詞：形容動詞"
+                    kind = "形容動詞"
                 elif(part[1] == "固有名詞"):
                     if(part[2] == "一般"):
                         kind = "名詞：一般"

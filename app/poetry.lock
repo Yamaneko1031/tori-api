@@ -51,6 +51,17 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "dill"
+version = "0.3.3"
+description = "serialize all of python"
+category = "main"
+optional = false
+python-versions = ">=2.6, !=3.0.*"
+
+[package.extras]
+graph = ["objgraph (>=1.7.2)"]
+
+[[package]]
 name = "fastapi"
 version = "0.63.0"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
@@ -203,6 +214,21 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "klepto"
+version = "0.2.0"
+description = "persistent caching to memory, disk, or database"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+dill = ">=0.3.3"
+pox = ">=0.2.9"
+
+[package.extras]
+archives = ["h5py (>=2.8.0)", "pandas (>=0.17.0)", "sqlalchemy (>=0.8.4)"]
+
+[[package]]
 name = "mecab-python3"
 version = "1.0.3"
 description = "Python wrapper for the MeCab morphological analyzer for Japanese"
@@ -237,6 +263,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [package.dependencies]
 pyparsing = ">=2.0.2"
+
+[[package]]
+name = "pox"
+version = "0.2.9"
+description = "utilities for filesystem exploration and automated builds"
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "proto-plus"
@@ -302,6 +336,22 @@ python-versions = ">=3.6"
 dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
 typing_extensions = ["typing-extensions (>=3.7.2)"]
+
+[[package]]
+name = "pykakasi"
+version = "2.0.6"
+description = "Python implementation of kakasi - kana kanji simple inversion library"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+klepto = "*"
+
+[package.extras]
+check = ["mypy (==0.770)", "mypy-extensions (==0.4.3)", "docutils", "check-manifest", "flake8", "readme-renderer", "pygments", "isort", "twine"]
+docs = ["sphinx (>=1.8)", "sphinx-intl", "sphinx-py3doc-enhanced-theme", "sphinx-rtd-theme"]
+test = ["pytest", "pytest-pep8", "pytest-cov", "coverage[toml] (>=5.2)"]
 
 [[package]]
 name = "pyparsing"
@@ -510,7 +560,7 @@ python-versions = ">=3.6.1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "21ab9c9983702a97bce5be20fbbba3daf40e4e767ae2695ccddc145f7cbf7bab"
+content-hash = "132cffb9034ed809c38704e15729c41bcfcfcecf93b4db3a5a7700b30ab75dea"
 
 [metadata.files]
 autopep8 = [
@@ -536,6 +586,10 @@ click = [
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+]
+dill = [
+    {file = "dill-0.3.3-py2.py3-none-any.whl", hash = "sha256:78370261be6ea49037ace8c17e0b7dd06d0393af6513cc23f9b222d9367ce389"},
+    {file = "dill-0.3.3.zip", hash = "sha256:efb7f6cb65dba7087c1e111bb5390291ba3616741f96840bfc75792a1a9b5ded"},
 ]
 fastapi = [
     {file = "fastapi-0.63.0-py3-none-any.whl", hash = "sha256:98d8ea9591d8512fdadf255d2a8fa56515cdd8624dca4af369da73727409508e"},
@@ -634,6 +688,10 @@ idna = [
 jaconv = [
     {file = "jaconv-0.3.tar.gz", hash = "sha256:cc70c796c19a6765598c03eac59d1399a555a9a8839cc70e540ec26f0ec3e66e"},
 ]
+klepto = [
+    {file = "klepto-0.2.0-py2.py3-none-any.whl", hash = "sha256:990f2cbc39a44765d5a438b63094543ebfdbd72b45e940e4188e8e73c3f854bd"},
+    {file = "klepto-0.2.0.zip", hash = "sha256:8030f76c9ba147ac14178792180409d027cda159eecd7d2f7cda2dd4e0ba51a2"},
+]
 mecab-python3 = [
     {file = "mecab-python3-1.0.3.tar.gz", hash = "sha256:62abe28a1155398325372291483608427bc82681fef80e7d132904415f9fd42e"},
     {file = "mecab_python3-1.0.3-cp35-cp35m-macosx_10_14_x86_64.whl", hash = "sha256:02792fe78a8ff678e5ead2cfb8ba242d44793c43e2ec469e9b6f8a9ef32dd52f"},
@@ -659,6 +717,10 @@ oauthlib = [
 packaging = [
     {file = "packaging-20.9-py2.py3-none-any.whl", hash = "sha256:67714da7f7bc052e064859c05c595155bd1ee9f69f76557e21f051443c20947a"},
     {file = "packaging-20.9.tar.gz", hash = "sha256:5b327ac1320dc863dca72f4514ecc086f31186744b84a230374cc1fd776feae5"},
+]
+pox = [
+    {file = "pox-0.2.9-py2.py3-none-any.whl", hash = "sha256:013eb9e01e9a0670da881894925d73b2d4b32343471b22fa8c41e19e8b3f6367"},
+    {file = "pox-0.2.9.zip", hash = "sha256:f08b5453edf94fd6fdb28e043658cdd6151d5fd8384066a24fad8d4bd7e637c0"},
 ]
 proto-plus = [
     {file = "proto-plus-1.17.0.tar.gz", hash = "sha256:ebced9a550a4236ec652a4988bf68e5c7da613b001165405975dd548c844e5cd"},
@@ -743,6 +805,10 @@ pydantic = [
     {file = "pydantic-1.7.3-cp39-cp39-win_amd64.whl", hash = "sha256:475f2fa134cf272d6631072554f845d0630907fce053926ff634cc6bc45bf1af"},
     {file = "pydantic-1.7.3-py3-none-any.whl", hash = "sha256:38be427ea01a78206bcaf9a56f835784afcba9e5b88fbdce33bbbfbcd7841229"},
     {file = "pydantic-1.7.3.tar.gz", hash = "sha256:213125b7e9e64713d16d988d10997dabc6a1f73f3991e1ff8e35ebb1409c7dc9"},
+]
+pykakasi = [
+    {file = "pykakasi-2.0.6-py3-none-any.whl", hash = "sha256:4dbba3cb9698ecefa84e2b603ddfa8a0862edf371cdec6414fbac068e9127634"},
+    {file = "pykakasi-2.0.6.tar.gz", hash = "sha256:e0cf678b6d86454c524189aa6cc5fb97b45e49528917e992277faeb211f0d5a6"},
 ]
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
