@@ -155,6 +155,30 @@ def remembered_tweet():
     return {"detail": "success"}
 
 
+@router.post("/unknown_tweet", tags=["word"])
+def unknown_tweet():
+    """ 知らない単語についてツイートする
+    """
+    word_service.unknown_word_tweet()
+    return {"detail": "success"}
+
+
+@router.post("/known_tweet", tags=["word"])
+def known_tweet():
+    """ 知っている単語についてツイートする
+    """
+    word_service.known_word_tweet()
+    return {"detail": "success"}
+
+
+@router.post("/trend_tweet", tags=["word"])
+def trend_tweet():
+    """ ツイッタートレンドからランダムでピックアップしてツイートする
+    """
+    word_service.trend_tweet()
+    return {"detail": "success"}
+
+
 @router.post("/tag_add_tweet", tags=["word"])
 def tag_add_tweet(add_tag: models.WordAddTag):
     """ タグ追加についてツイートする
