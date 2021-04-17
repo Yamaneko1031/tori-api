@@ -187,3 +187,13 @@ def tag_add_tweet(add_tag: models.WordAddTag):
         return {"detail": "success"}
     else:
         raise HTTPException(status_code=404, detail="Tag not found.")
+
+
+@router.get("/word_temp/{id}", tags=["word"])
+def get_temp(id: str):
+    """ テンポラリから情報を取得する
+    """
+    ret = word_service.get_temp(id)
+    if not ret:
+        raise HTTPException(status_code=404, detail="Temp not found.")
+    return ret

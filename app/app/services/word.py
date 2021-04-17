@@ -80,6 +80,7 @@ class WordService:
     collection_name = "words"
     collection_unknown = "unknowns"
     collection_session = "sessions"
+    collection_temporary = "temporaries"
 
     def __init__(self):
         """ コンストラクタ
@@ -129,14 +130,15 @@ class WordService:
         """ 共通タグの単語情報取得
         """
         data = []
-        docs = db.collection("words").where("tags", "array_contains", tag).stream()
+        docs = db.collection("words").where(
+            "tags", "array_contains", tag).stream()
         for doc in docs:
             if doc.to_dict()["word"] != word:
                 data.append(doc)
 
         if data:
             return models.WordAll(**random.choice(data).to_dict())
-            
+
         return
 
     def delete_unknown(self, word: str):
@@ -235,14 +237,12 @@ class WordService:
 
         for doc in docs:
             unknown = doc.to_dict()
-            print(unknown)
             ref = {
                 "word": "",
                 "mean": "",
             }
             if unknown["word_ref"]:
                 get_word = self.get(unknown["word_ref"])
-                print(get_word)
                 if get_word:
                     ref["word"] = get_word.word
                     ref["mean"] = get_word.mean
@@ -383,7 +383,6 @@ class WordService:
 
         return False
 
-        
     def add_tag_for_text(self, word: str, text: str):
         """ 文章内からタグ追加
             タグ一覧を返す
@@ -398,7 +397,6 @@ class WordService:
         """ セッションID取得
             ヘッダーのsession_idパラメータに値が入っていない場合は新規idを発行
         """
-        db = firestore.Client()
         sessions = db.collection(self.collection_session)
         if not session_id:
             session_id = str(uuid4())
@@ -424,9 +422,9 @@ class WordService:
         trends = tweet_api.trends_place(woeid)[0]
 
         msg = ""
-        for i in range(10):
+        for i in range(50):
             # ローマ字のみの判定用
-            re_roma = re.compile(r'^[a-zA-Z]+$') #a-z:小文字、A-Z:大文字
+            re_roma = re.compile(r'^[a-zA-Z0-9_]+$')  # a-z:小文字、A-Z:大文字
             # トレンドワードからランダムで取得
             trend_word = random.choice(trends["trends"])["name"]
 
@@ -437,30 +435,35 @@ class WordService:
             elif not self.ng_word_check(trend_word, 3):
                 # ツイート内容の生成
                 ret_data = self.get_knowns_list(mean=trend_word)
-                if ret_data["unknown"]:
+                if ret_data["unknown"] and trend_word != ret_data["unknown"]["word"]:
+                    # 内容を保存
+                    id = self.create_temp(
+                        ret_data["unknown"]["word"].replace("#", ""), "意味")
                     msg = ("最近「{}」って言葉をよく耳にするよ！\n"
-                           "ところで「{}」ってどういう意味なんだろう？\n"
-                           "だれか教えにきて欲しいな！\n"
-                           "https://torichan.app").format(
-                               trend_word, ret_data["unknown"]["word"])
-                elif ret_data["known"]:
+                           "でも「{}」がどういう意味かわかんない。\n"
+                           "だれか教えにきて欲しいな。\n"
+                           "https://torichan.app/ext/{}").format(
+                               trend_word, ret_data["unknown"]["word"], id)
+                elif ret_data["known"] and not ret_data["unknown"]:
                     msg = ("最近「{}」って言葉をよく耳にするよ！\n"
                            "むーちゃん「{}」って言葉は知ってるよ！\n"
-                           "いっぱい色んな言葉を教えて欲しいな！\n"
+                           "いっぱい色んな言葉を教えて欲しいな。\n"
                            "https://torichan.app").format(
                                trend_word, ret_data["unknown"]["word"])
                 else:
+                    # 内容を保存
+                    id = self.create_temp(trend_word.replace("#", ""), "意味")
                     msg = ("最近「{}」って言葉をよく耳にするよ！\n"
                            "でも、むーちゃんは何の事かよく分かんない。\n"
-                           "だれか教えにきて欲しいな！\n"
-                           "https://torichan.app").format(
-                               trend_word)
+                           "だれか教えにきて欲しいな。\n"
+                           "https://torichan.app/ext/{}").format(
+                               trend_word, id)
                 break
 
         # ツイートする
         if msg:
-            print(msg)
-            # self.post_tweet(msg)
+            # print(msg)
+            self.post_tweet(msg)
 
     def ng_word_check(self, word, limit=3):
         """ 指定したワードが不適切な単語かチェックする
@@ -545,15 +548,37 @@ class WordService:
         """
         # 意味を知らないワードのピックアップ
         data = self.get_topic_unknown()
+        # 内容を保存
+        id = self.create_temp(data["word"], "意味")
+
         # ツイート内容生成
         msg = ("「{}」ってどういう意味かな？\n"
-               "最近聞いたんだけど、意味を聞くの忘れてたの。\n"
-               "だれか知ってたら教えにきて欲しいな。\n"
-               "https://torichan.app").format(data["word"])
+               "最近きいたんだけど、意味は知らないの。\n"
+               "だれか教えにきて欲しいな。\n"
+               "https://torichan.app/ext/{}").format(data["word"], id)
 
         # ツイート
         self.post_tweet(msg)
-        print(msg)
+
+    def create_temp(self, word: str, kind: str):
+        """ テンポラリに情報を保存
+        """
+        doc = db.collection(self.collection_temporary).document()
+        doc.set({
+            "cnt": 0,
+            "kind": kind,
+            "word": word
+        }
+        )
+        return doc.id
+
+    def get_temp(self, id: str):
+        """ テンポラリから情報を取得
+        """
+        doc = db.collection(self.collection_temporary).document(id).get()
+        if doc.exists:
+            return doc.to_dict()
+        return
 
 
 word_instance = WordService()
