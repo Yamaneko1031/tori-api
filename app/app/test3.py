@@ -25,7 +25,16 @@ word_service = services.word_instance
 tag_service = services.tag_instance
 
 # word_service.unknown_word_tweet()
-word_service.trend_tweet()
+# word_service.trend_tweet()
+
+# system_service.add_janken_result(0,"aaaaaa")
+# system_service.add_janken_result(1,"aaaaaa")
+# system_service.add_janken_result(2,"aaaaaa")
+# system_service.add_janken_result(2,"aaaaaa")
+# system_service.add_janken_result(2,"aaaaaa")
+
+# data = system_service.get_janken_result_session("aaaaaa")
+# print(data)
 
 # test = "#テスト文字列"
 # test2 = test.replace("#","")

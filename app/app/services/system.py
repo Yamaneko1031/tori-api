@@ -8,6 +8,7 @@ db = firestore.Client()
 
 class SystemService:
     collection_name = "system"
+    collection_session = "sessions"
 
     def add_system_cnt(self, key):
         doc_ref = db.collection(self.collection_name).document("TOTAL")
@@ -105,5 +106,81 @@ class SystemService:
     def get_ng_list(self):
         doc = db.collection(self.collection_name).document("NG_LIST").get()
         return doc.to_dict()["negative"]
+
+    def add_janken_result(self, result, session_id):
+        if result == 0:
+            set_result = "win_cnt"
+        elif result == 1:
+            set_result = "lose_cnt"
+        elif result == 2:
+            set_result = "draw_cnt"
+        else:
+            return False
+
+        doc_ref = db.collection(self.collection_session).document(
+            document_id=session_id)
+        doc_ref.set({
+            set_result: firestore.Increment(1)
+        }, merge=True)
+
+        doc_ref = db.collection(
+            self.collection_name).document("TOTAL")
+        doc_ref.set({
+            set_result: firestore.Increment(1)
+        }, merge=True)
+
+        doc_ref = db.collection(
+            self.collection_name).document(datetime.today().strftime("%y-%m-%d"))
+        doc_ref.set({
+            set_result: firestore.Increment(1)
+        }, merge=True)
+        return True
+    
+    def get_janken_result_total(self):
+        ret = {
+            "win_cnt": 0,
+            "lose_cnt": 0,
+            "draw_cnt": 0,
+        }
+        doc = db.collection(
+            self.collection_name).document("TOTAL").get()
+        if doc.exists:
+            for key in ret.keys():
+                if key in doc.to_dict():
+                    ret[key] = doc.to_dict()[key]
+                else:
+                    ret[key] = 0
+        return ret
+
+    def get_janken_result_today(self):
+        ret = {
+            "win_cnt": 0,
+            "lose_cnt": 0,
+            "draw_cnt": 0,
+        }
+        doc = db.collection(
+            self.collection_name).document(datetime.today().strftime("%y-%m-%d")).get()
+        if doc.exists:
+            for key in ret.keys():
+                if key in doc.to_dict():
+                    ret[key] = doc.to_dict()[key]
+                else:
+                    ret[key] = 0
+        return ret
+
+    def get_janken_result_session(self, session_id):
+        ret = {
+            "win_cnt": 0,
+            "lose_cnt": 0,
+            "draw_cnt": 0,
+        }
+        doc = db.collection(
+            self.collection_session).document(document_id=session_id).get()
+        if doc.exists:
+            for key in ret.keys():
+                if key in doc.to_dict():
+                    ret[key] = doc.to_dict()[key]
+        return ret
+
 
 system_instance = SystemService()

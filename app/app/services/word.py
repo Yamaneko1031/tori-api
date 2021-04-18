@@ -560,6 +560,40 @@ class WordService:
         # ツイート
         self.post_tweet(msg)
 
+    def janken_tweet(self):
+        """ じゃんけん結果のツイートする
+        """
+        # 当日のじゃんけん結果を取得
+        data = system_service.get_janken_result_today()
+
+        if data["win_cnt"] + data["lose_cnt"] > 0:
+            if data["win_cnt"] < data["lose_cnt"]:
+                # ツイート内容生成
+                msg = ("今日はじゃんけんで遊んでもらえたよ！\n"
+                    "{}勝{}負でむーちゃんが勝ってたよ！\n"
+                    "またじゃんけんしきて欲しいな！\n"
+                    "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
+            elif data["win_cnt"] < data["lose_cnt"]:
+                # ツイート内容生成
+                msg = ("今日はじゃんけんで遊んでもらえたよ！\n"
+                    "{}勝{}負でむーちゃんが負けてたの。\n"
+                    "次は勝ちたいの！\n"
+                    "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
+            else:
+                # ツイート内容生成
+                msg = ("今日はじゃんけんで遊んでもらえたよ！\n"
+                    "{}勝{}負でいい勝負だったよ。\n"
+                    "次は勝ちたいの！\n"
+                    "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
+        else:
+            # ツイート内容生成
+            msg = ("じゃんけんしたいな～。\n"
+                "誰かじゃんけんしに来てほしいな！\n"
+                "https://torichan.app/ext/janken")
+
+        # ツイート
+        self.post_tweet(msg)
+
     def create_temp(self, word: str, kind: str):
         """ テンポラリに情報を保存
         """

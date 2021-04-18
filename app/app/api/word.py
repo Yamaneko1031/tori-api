@@ -37,7 +37,8 @@ def get_word(word: str):
 def update_word_mean(word_update: models.WordUpdate, session_id: Optional[str] = Header(None)):
     """ 単語情報更新
     """
-    ret_word = word_service.update_mean(word_update.word, word_update.mean, session_id)
+    ret_word = word_service.update_mean(
+        word_update.word, word_update.mean, session_id)
     if not ret_word:
         raise HTTPException(status_code=404, detail="unknown word.")
     return ret_word
@@ -197,3 +198,11 @@ def get_temp(id: str):
     if not ret:
         raise HTTPException(status_code=404, detail="Temp not found.")
     return ret
+
+
+@router.post("/janken_tweet", tags=["word"])
+def janken_tweet():
+    """ じゃんけんの結果をツイート
+    """
+    word_service.janken_tweet()
+    return {"detail": "success"}
