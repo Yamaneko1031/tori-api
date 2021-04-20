@@ -10,6 +10,8 @@ class BaseWord(BaseModel):
     mean: str = ""
 
 class WordCreate(BaseWord):
+    kind: str = ""
+    secret_tag: str = ""
     pass
 
 

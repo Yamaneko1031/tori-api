@@ -24,6 +24,10 @@ system_service = services.system_instance
 word_service = services.word_instance
 tag_service = services.tag_instance
 
+word_service.word_relation_tag_tweet()
+# data = tag_service.get_random_tag_more0()
+# print( data )
+
 # word_service.unknown_word_tweet()
 # word_service.trend_tweet()
 
@@ -53,9 +57,8 @@ tag_service = services.tag_instance
 #         print("{}:{}".format(key,kana))
 
 
-# word_create = models.WordCreate(word="パソコン",mean="高速に計算が出来て便利な機械。寂しい。")
+# word_create = models.WordCreate(word="パソコン",mean="高速に計算が出来て便利な機械。寂しい。",kind="食べ物",secret_tag="おいしくて大きい")
 # ret = word_service.create(word_create,"aaaaaa")
-
 
 # tag_service.create_tag()
 

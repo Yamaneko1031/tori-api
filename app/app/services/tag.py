@@ -110,4 +110,14 @@ class TagService:
         return ret_data
 
 
+    def get_random_tag_more0(self):
+        """ pnt0以上のタグを取得する
+        """
+        tag_more0 = []
+        docs = db.collection("act_tags").where("pnt", ">=", 0).stream()
+        for doc in docs:
+            tag_more0.append(doc.to_dict())
+
+        return random.choice(tag_more0)
+
 tag_instance = TagService()

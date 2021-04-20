@@ -94,7 +94,7 @@ class WordService:
         """ 新規単語の追加
         """
         retData = self.get_knowns_list(
-            mean=word_create.mean, teach_word=word_create.word)
+            mean=word_create.mean, teach_word=word_create.word, secret_tag=word_create.secret_tag)
 
         docs = db.collection(self.collection_name).where(
             "word", "==", word_create.word).limit(1).get()
@@ -153,7 +153,7 @@ class WordService:
 
         return
 
-    def get_knowns_list(self, mean: str, teach_word: str = ""):
+    def get_knowns_list(self, mean: str, teach_word: str = "", secret_tag: str = ""):
         """ 意味を分解して知ってる単語、知らない単語に分ける
             知らない単語はDBに追加される
             知っている単語、知らない単語の中からランダムで一つ選んで返す
@@ -162,6 +162,7 @@ class WordService:
         re_kana_1char = re.compile(r'[あ-ん]|[ア-ン]')
         # 意味の中から認識可能な単語を取得
         phrase_list = morpheme.disassemble(mean)
+        phrase_list.update(morpheme.disassemble(secret_tag))
 
         word_ref = ""
         trend_word = ""
@@ -526,6 +527,49 @@ class WordService:
         else:
             return
 
+    def word_relation_tag_tweet(self):
+        """ タグ追加についてツイートする
+        """
+        msg = ""
+        tag = tag_service.get_random_tag_more0()
+
+        word1 = self.get_common_tag_word(word="",tag=tag["text"])
+        if word1:
+            word2 = self.get_common_tag_word(word=word1.word,tag=tag["text"])
+            if word2:
+                if tag["part"] == "形容詞":
+                    # 内容を保存
+                    id = self.create_temp(tag["text"], "形容詞関連")
+                    msg = ("{}や{}は{}んだよ。\n"
+                    "{}ものをもっと教えてほしいな。\n"
+                    "https://torichan.app/ext/{}").format(word1.word,word2.word,tag["text"],tag["text"],id)
+                elif tag["part"] == "形容動詞":
+                    # 内容を保存
+                    id = self.create_temp(tag["text"], "形容動詞関連")
+                    msg = ("{}や{}は{}なんだよ。\n"
+                    "{}なものをもっと教えてほしいな。\n"
+                    "https://torichan.app/ext/{}").format(word1.word,word2.word,tag["text"],tag["text"],id)
+
+        if not msg:
+            if tag["part"] == "形容詞":
+                # 内容を保存
+                id = self.create_temp(tag["text"], "形容詞関連")
+                msg = ("{}ものが知りたいの。\n"
+                "誰か{}ものを教えに来てほしいな。\n"
+                "https://torichan.app/ext/{}").format(tag["text"],tag["text"],id)
+            elif tag["part"] == "形容動詞":
+                # 内容を保存
+                id = self.create_temp(tag["text"], "形容動詞関連")
+                msg = ("{}なものが知りたいの。\n"
+                "誰か{}なものを教えに来てほしいな。\n"
+                "https://torichan.app/ext/{}").format(tag["text"],tag["text"],id)
+
+        if msg:
+            self.post_tweet(msg)
+            return msg
+        else:
+            return
+
     def known_word_tweet(self):
         """ 知っているワードについてツイートする
         """
@@ -570,19 +614,19 @@ class WordService:
             if data["win_cnt"] < data["lose_cnt"]:
                 # ツイート内容生成
                 msg = ("今日はじゃんけんで遊んでもらえたよ！\n"
-                    "{}勝{}負でむーちゃんが勝ってたよ！\n"
+                    "{}勝{}敗でむーちゃんが勝ってたよ！\n"
                     "またじゃんけんしきて欲しいな！\n"
                     "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
             elif data["win_cnt"] < data["lose_cnt"]:
                 # ツイート内容生成
                 msg = ("今日はじゃんけんで遊んでもらえたよ！\n"
-                    "{}勝{}負でむーちゃんが負けてたの。\n"
+                    "{}勝{}敗でむーちゃんが負けてたの。\n"
                     "次は勝ちたいの！\n"
                     "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
             else:
                 # ツイート内容生成
                 msg = ("今日はじゃんけんで遊んでもらえたよ！\n"
-                    "{}勝{}負でいい勝負だったよ。\n"
+                    "{}勝{}敗でいい勝負だったよ。\n"
                     "次は勝ちたいの！\n"
                     "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
         else:
@@ -601,7 +645,8 @@ class WordService:
         doc.set({
             "cnt": 0,
             "kind": kind,
-            "word": word
+            "word": word,
+            "created_at": datetime.utcnow()
         }
         )
         return doc.id

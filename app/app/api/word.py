@@ -180,6 +180,14 @@ def trend_tweet():
     return {"detail": "success"}
 
 
+@router.post("/relation_tag_tweet", tags=["word"])
+def relation_tag_tweet():
+    """ タグに関連する単語のツイート
+    """
+    word_service.word_relation_tag_tweet()
+    return {"detail": "success"}
+
+
 @router.post("/tag_add_tweet", tags=["word"])
 def tag_add_tweet(add_tag: models.WordAddTag):
     """ タグ追加についてツイートする
