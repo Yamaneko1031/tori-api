@@ -613,19 +613,19 @@ class WordService:
         if data["win_cnt"] + data["lose_cnt"] > 0:
             if data["win_cnt"] < data["lose_cnt"]:
                 # ツイート内容生成
-                msg = ("今日はじゃんけんで遊んでもらえたよ！\n"
+                msg = ("今日はじゃんけんで遊んでもらえたの！\n"
                     "{}勝{}敗でむーちゃんが勝ってたよ！\n"
                     "またじゃんけんしきて欲しいな！\n"
                     "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
-            elif data["win_cnt"] < data["lose_cnt"]:
+            elif data["win_cnt"] > data["lose_cnt"]:
                 # ツイート内容生成
-                msg = ("今日はじゃんけんで遊んでもらえたよ！\n"
+                msg = ("今日はじゃんけんで遊んでもらえたの！\n"
                     "{}勝{}敗でむーちゃんが負けてたの。\n"
                     "次は勝ちたいの！\n"
                     "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
             else:
                 # ツイート内容生成
-                msg = ("今日はじゃんけんで遊んでもらえたよ！\n"
+                msg = ("今日はじゃんけんで遊んでもらえたの！\n"
                     "{}勝{}敗でいい勝負だったよ。\n"
                     "次は勝ちたいの！\n"
                     "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
