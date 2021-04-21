@@ -31,8 +31,5 @@ def add_janken_result(result: int, session_id: Optional[str] = Header(None)):
 
 @router.get("/janken", tags=["system"])
 def add_janken_result():
-    if system_service.add_janken_result(result):
-        return {"detail": "success"}
-    else:
-        raise HTTPException(status_code=404, detail="param error.")
+    return system_service.get_janken_result_total()
 
