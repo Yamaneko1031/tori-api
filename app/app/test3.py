@@ -24,7 +24,25 @@ system_service = services.system_instance
 word_service = services.word_instance
 tag_service = services.tag_instance
 
-word_service.word_relation_tag_tweet()
+word_cnt = 0
+docs = db.collection("unknowns").stream()
+for doc in docs:
+    word_cnt = word_cnt + 1
+
+doc_ref = db.collection("system").document("TOTAL")
+doc_ref.set({
+    "unknown_cnt": word_cnt
+},merge=True)
+
+# word_service.word_relation_tag_tweet()
+
+# docs = db.collection("temporaries").stream()
+# for doc in docs:
+#     data = doc.to_dict()
+#     if "created_at" not in data:
+#         print(data)
+#         doc.reference.delete()
+
 # data = tag_service.get_random_tag_more0()
 # print( data )
 

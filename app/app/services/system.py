@@ -15,6 +15,7 @@ class SystemService:
         doc_ref.set({
             key: firestore.Increment(1),
         }, merge=True)
+
         doc_ref = db.collection(
             self.collection_name).document(datetime.today().strftime("%y-%m-%d"))
         doc_ref.set({
@@ -29,11 +30,7 @@ class SystemService:
         return doc.to_dict()
 
     def add_session(self):
-        doc_ref = db.collection(
-            self.collection_name).document("TOTAL")
-        doc_ref.set({
-            "session_cnt": firestore.Increment(1)
-        }, merge=True)
+        self.add_system_cnt("session_cnt")
 
     def add_tag(self):
         doc_ref = db.collection(
