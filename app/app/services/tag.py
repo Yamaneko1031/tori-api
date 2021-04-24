@@ -71,7 +71,6 @@ class TagService:
                 "refer": colection_act.document(base)
             })
 
-            
     def create_reserve_tags(self, base: str, part: str, pnt: int, text: str, kana: str):
         colection_act = db.collection("reserve_tags")
         colection_act.document(base).set({
@@ -80,7 +79,15 @@ class TagService:
             "text": text,
             "kana": kana
         })
-        
+
+    def create_tag_from_reserve(self, doc_name: str, pnt: int):
+        doc = db.collection(
+            "reserve_tags").document(doc_name).get()
+        if doc.exists:
+            data = doc.to_dict()
+            self.create_tag(doc_name, data["part"],
+                            pnt, data["text"], data["kana"])
+            db.collection("reserve_tags").document(doc_name).delete()
 
     def get_tag(self, tag: str, get_ref: bool = False):
         """ タグの情報を取得する
@@ -109,7 +116,6 @@ class TagService:
 
         return ret_data
 
-
     def get_random_tag_more0(self):
         """ pnt0以上のタグを取得する
         """
@@ -119,5 +125,6 @@ class TagService:
             tag_more0.append(doc.to_dict())
 
         return random.choice(tag_more0)
+
 
 tag_instance = TagService()

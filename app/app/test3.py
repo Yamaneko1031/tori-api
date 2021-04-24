@@ -24,15 +24,25 @@ system_service = services.system_instance
 word_service = services.word_instance
 tag_service = services.tag_instance
 
-word_cnt = 0
-docs = db.collection("unknowns").stream()
-for doc in docs:
-    word_cnt = word_cnt + 1
+# tag_service.create_tag("赤い", "形容詞", 1, "赤い", "あかい")
+# tag_service.create_tag("青い", "形容詞", 0, "青い", "あおい")
+# tag_service.create_tag("黒い", "形容詞", 0, "黒い", "くろい")
+# # tag_service.create_tag("白い", "形容詞", 0, "白い", "しろい")
 
-doc_ref = db.collection("system").document("TOTAL")
-doc_ref.set({
-    "unknown_cnt": word_cnt
-},merge=True)
+# tag_service.create_tag_from_reserve("丸い",1)
+# tag_service.create_tag_from_reserve("白い",1)
+# tag_service.create_tag_from_reserve("寂しい",-1)
+# tag_service.create_tag_from_reserve("邪魔",-3)
+
+# word_cnt = 0
+# docs = db.collection("unknowns").stream()
+# for doc in docs:
+#     word_cnt = word_cnt + 1
+
+# doc_ref = db.collection("system").document("TOTAL")
+# doc_ref.set({
+#     "unknown_cnt": word_cnt
+# },merge=True)
 
 # word_service.word_relation_tag_tweet()
 
