@@ -412,7 +412,8 @@ class WordService:
     def post_tweet(self, msg):
         """ ツイートする
         """
-        tweet_api.update_status(msg)
+        if not self.ng_text_check(msg):
+            tweet_api.update_status(msg)
 
     def trend_tweet(self):
         """ ツイッタートレンドからランダムでピックアップしてツイートする
@@ -481,6 +482,14 @@ class WordService:
             if ng_word_hit >= limit:
                 return True
 
+        return False
+
+    def ng_text_check(self, text):
+        """ テキスト内にNGワード入っていないかチェックする
+        """
+        for ng_word in self.ng_list:
+            if ng_word in text:
+                return True
         return False
 
     def remembered_tweet(self):

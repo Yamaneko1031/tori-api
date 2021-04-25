@@ -24,6 +24,8 @@ system_service = services.system_instance
 word_service = services.word_instance
 tag_service = services.tag_instance
 
+word_service.post_tweet("殺すぞ")
+
 # tag_service.create_tag("赤い", "形容詞", 1, "赤い", "あかい")
 # tag_service.create_tag("青い", "形容詞", 0, "青い", "あおい")
 # tag_service.create_tag("黒い", "形容詞", 0, "黒い", "くろい")
