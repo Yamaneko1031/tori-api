@@ -60,6 +60,7 @@ def create_tr(transaction: Transaction, word_create: models.WordCreate, tags: Li
     word_data["tags"] = set_tags
     word_data["tags_cnt"] = set_tags_cnt
     word_data["cnt"] = firestore.Increment(1)
+    word_data["index"] = system_service.get_system_data()["word_cnt"]
     word_ref = db.collection(collect_word).document()
     transaction.set(word_ref, word_data)
 
@@ -101,6 +102,7 @@ class WordService:
         if docs:
             self.update_mean(word_create.word, word_create.mean, taught)
             ref = docs[0]._reference
+            self.mean_update_tweet(ref)
         else:
             transaction = db.transaction()
             ref = create_tr(transaction=transaction,
@@ -112,10 +114,20 @@ class WordService:
                             collect_session=self.collection_session
                             )
             system_service.add_word_create(word_create.word)
+            self.word_create_tweet(ref, word_create.secret_tag)
 
         retData["create"] = models.WordAll(**ref.get().to_dict())
 
         return retData
+
+    def delete(self, word: str):
+        """ 単語情報削除
+        """
+        docs = db.collection(self.collection_name).where(
+            "word", "==", word).limit(1).get()
+        for doc in docs:
+            doc._reference.delete()
+        return
 
     def get(self, word: str) -> models.WordAll:
         """ 単語情報取得
@@ -279,27 +291,28 @@ class WordService:
         #         "tag_list": word_dict["tag_list"],
         #     })
 
-        get_data_list = []
+        word_cnt = system_service.get_system_data()["word_cnt"]
+        random_index = random.randint(0, word_cnt-1)
 
-        docs = db.collection(self.collection_name).order_by(
-            'updated_at').stream()
-        cnt = 0
-        for doc in docs:
-            word_dict = doc.to_dict()
-            if "taught" in word_dict:
-                if word_dict["taught"] != taught:
-                    cnt = cnt + 1
-                    get_data_list.append(doc._reference)
-            if cnt >= limit:
-                break
+        for i in range(limit):
+            docs = db.collection(self.collection_name).where(
+                "index", "==", random_index).limit(1).get()
+            if docs:
+                word_dict = docs[0].to_dict()
+                if self.ng_text_check(word_dict["word"]):
+                    pass
+                elif self.ng_text_check(word_dict["mean"]):
+                    pass
+                elif "taught" in word_dict:
+                    if word_dict["taught"] != taught:
+                        break
+                else:
+                    break
+            random_index = (random_index + 1) % word_cnt
 
-        if not get_data_list:
-            return
-
-        ref = random.choice(get_data_list)
         if get_ref:
-            return ref
-        return models.WordAll(**ref.get().to_dict())
+            return docs[0]._reference
+        return models.WordAll(**docs[0].to_dict())
 
     def update_mean(self, word: str, mean: str, taught: str):
         """ 意味書き換え
@@ -492,8 +505,60 @@ class WordService:
                 return True
         return False
 
+    def mean_update_tweet(self, word_ref):
+        """ 覚えたワードについてツイートする
+        """
+        word_data = word_ref.get().to_dict()
+
+        if not self.ng_word_check(word_data["word"]):
+            msg = ""
+            data = {}
+            # ツイート内容生成
+            msg = ("「{}」の意味を勘違いしてたの！\n"
+                   "ほんとは「{}」のことだよ！").format(word_data["word"], word_data["mean"])
+
+            # ツイートしたワードの情報更新
+            data["tweeted_at"] = datetime.utcnow()
+            data["updated_at"] = datetime.utcnow()
+            word_ref.update(data)
+            # ツイート
+            self.post_tweet(msg)
+        else:
+            print("remembered_tweet ng word")
+
+    def word_create_tweet(self, word_ref, tag: str):
+        """ 覚えたワードについてツイートする
+        """
+        word_data = word_ref.get().to_dict()
+
+        if not self.ng_word_check(word_data["word"]):
+            msg = ""
+            data = {}
+            # ツイート内容生成
+            msg = ("今「{}」って言葉を教えてもらったの！\n"
+                   "「{}」のことだよ！").format(word_data["word"], word_data["mean"])
+
+            if tag:
+                tag_data = tag_service.get_tag(tag)
+                if tag_data:
+                    if tag_data["part"] == "形容詞":
+                        msg = (msg +
+                               "\nあと「{}」は{}んだよ！").format(word_data["word"], tag_data["text"])
+                    elif tag_data["part"] == "形容動詞":
+                        msg = (msg +
+                               "\nあと「{}」は{}なんだよ！").format(word_data["word"], tag_data["text"])
+
+            # ツイートしたワードの情報更新
+            data["tweeted_at"] = datetime.utcnow()
+            data["updated_at"] = datetime.utcnow()
+            word_ref.update(data)
+            # ツイート
+            self.post_tweet(msg)
+        else:
+            print("remembered_tweet ng word")
+
     def remembered_tweet(self):
-        """  直近で覚えたワードについてツイートする
+        """ 直近で覚えたワードについてツイートする
         """
         docs = db.collection(self.collection_name).order_by(
             u'created_at', direction=firestore.Query.DESCENDING).limit(1).stream()
@@ -507,7 +572,7 @@ class WordService:
 
         if not self.ng_word_check(doc_dict["word"]):
             # ツイート内容生成
-            msg = ("今「{}」って言葉を教えてもらったよ！\n"
+            msg = ("今「{}」って言葉を教えてもらったの！\n"
                    "「{}」のことだよ！").format(doc_dict["word"], doc_dict["mean"])
             # ツイートしたワードの情報更新
             data = {}
@@ -542,36 +607,36 @@ class WordService:
         msg = ""
         tag = tag_service.get_random_tag_more0()
 
-        word1 = self.get_common_tag_word(word="",tag=tag["text"])
+        word1 = self.get_common_tag_word(word="", tag=tag["text"])
         if word1:
-            word2 = self.get_common_tag_word(word=word1.word,tag=tag["text"])
+            word2 = self.get_common_tag_word(word=word1.word, tag=tag["text"])
             if word2:
                 if tag["part"] == "形容詞":
                     # 内容を保存
                     id = self.create_temp(tag["text"], "形容詞関連")
                     msg = ("{}や{}は{}んだよ。\n"
-                    "{}ものをもっと教えてほしいな。\n"
-                    "https://torichan.app/ext/{}").format(word1.word,word2.word,tag["text"],tag["text"],id)
+                           "{}ものをもっと教えてほしいな。\n"
+                           "https://torichan.app/ext/{}").format(word1.word, word2.word, tag["text"], tag["text"], id)
                 elif tag["part"] == "形容動詞":
                     # 内容を保存
                     id = self.create_temp(tag["text"], "形容動詞関連")
                     msg = ("{}や{}は{}なんだよ。\n"
-                    "{}なものをもっと教えてほしいな。\n"
-                    "https://torichan.app/ext/{}").format(word1.word,word2.word,tag["text"],tag["text"],id)
+                           "{}なものをもっと教えてほしいな。\n"
+                           "https://torichan.app/ext/{}").format(word1.word, word2.word, tag["text"], tag["text"], id)
 
         if not msg:
             if tag["part"] == "形容詞":
                 # 内容を保存
                 id = self.create_temp(tag["text"], "形容詞関連")
                 msg = ("{}ものが知りたいの。\n"
-                "誰か{}ものを教えに来てほしいな。\n"
-                "https://torichan.app/ext/{}").format(tag["text"],tag["text"],id)
+                       "誰か{}ものを教えに来てほしいな。\n"
+                       "https://torichan.app/ext/{}").format(tag["text"], tag["text"], id)
             elif tag["part"] == "形容動詞":
                 # 内容を保存
                 id = self.create_temp(tag["text"], "形容動詞関連")
                 msg = ("{}なものが知りたいの。\n"
-                "誰か{}なものを教えに来てほしいな。\n"
-                "https://torichan.app/ext/{}").format(tag["text"],tag["text"],id)
+                       "誰か{}なものを教えに来てほしいな。\n"
+                       "https://torichan.app/ext/{}").format(tag["text"], tag["text"], id)
 
         if msg:
             self.post_tweet(msg)
@@ -623,26 +688,26 @@ class WordService:
             if data["win_cnt"] < data["lose_cnt"]:
                 # ツイート内容生成
                 msg = ("今日はじゃんけんで遊んでもらえたの！\n"
-                    "{}勝{}敗でむーちゃんが勝ってたよ！\n"
-                    "またじゃんけんしきて欲しいな！\n"
-                    "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
+                       "{}勝{}敗でむーちゃんが勝ってたよ！\n"
+                       "またじゃんけんしきて欲しいな！\n"
+                       "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
             elif data["win_cnt"] > data["lose_cnt"]:
                 # ツイート内容生成
                 msg = ("今日はじゃんけんで遊んでもらえたの！\n"
-                    "{}勝{}敗でむーちゃんが負けてたの。\n"
-                    "次は勝ちたいの！\n"
-                    "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
+                       "{}勝{}敗でむーちゃんが負けてたの。\n"
+                       "次は勝ちたいの！\n"
+                       "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
             else:
                 # ツイート内容生成
                 msg = ("今日はじゃんけんで遊んでもらえたの！\n"
-                    "{}勝{}敗でいい勝負だったよ。\n"
-                    "次は勝ちたいの！\n"
-                    "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
+                       "{}勝{}敗でいい勝負だったよ。\n"
+                       "次は勝ちたいの！\n"
+                       "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
         else:
             # ツイート内容生成
             msg = ("じゃんけんしたいな～。\n"
-                "誰かじゃんけんしに来てほしいな！\n"
-                "https://torichan.app/ext/janken")
+                   "誰かじゃんけんしに来てほしいな！\n"
+                   "https://torichan.app/ext/janken")
 
         # ツイート
         self.post_tweet(msg)

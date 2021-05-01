@@ -2,6 +2,7 @@ from google.cloud import firestore
 from datetime import datetime
 import time
 import re
+import random
 from pykakasi import kakasi
 
 import sys
@@ -24,7 +25,23 @@ system_service = services.system_instance
 word_service = services.word_instance
 tag_service = services.tag_instance
 
-word_service.post_tweet("殺すぞ")
+data = word_service.get_topic_word(taught="aaaaaa")
+print(data)
+
+
+# docs = db.collection("words").stream()
+# index = 0
+# for doc in docs:
+#     doc._reference.set({
+#         "index": index
+#     },merge=True)
+#     index = index + 1
+
+# docs = db.collection("system").document("TOTAL").set({
+#         "word_cnt": index
+#     },merge=True)
+
+# word_service.post_tweet("殺すぞ")
 
 # tag_service.create_tag("赤い", "形容詞", 1, "赤い", "あかい")
 # tag_service.create_tag("青い", "形容詞", 0, "青い", "あおい")
@@ -86,8 +103,9 @@ word_service.post_tweet("殺すぞ")
 #         kana = conv.do(key)
 #         print("{}:{}".format(key,kana))
 
+# word_service.delete("電卓")
 
-# word_create = models.WordCreate(word="パソコン",mean="高速に計算が出来て便利な機械。寂しい。",kind="食べ物",secret_tag="おいしくて大きい")
+# word_create = models.WordCreate(word="電卓",mean="高速に計算が出来て便利な機械。",kind="",secret_tag="速い")
 # ret = word_service.create(word_create,"aaaaaa")
 
 # tag_service.create_tag()
