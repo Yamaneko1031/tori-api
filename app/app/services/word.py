@@ -100,9 +100,9 @@ class WordService:
         docs = db.collection(self.collection_name).where(
             "word", "==", word_create.word).limit(1).get()
         if docs:
-            self.update_mean(word_create.word, word_create.mean, taught)
+            if self.update_mean(word_create.word, word_create.mean, taught):
+                self.mean_update_tweet(docs[0]._reference)
             ref = docs[0]._reference
-            self.mean_update_tweet(ref)
         else:
             transaction = db.transaction()
             ref = create_tr(transaction=transaction,
@@ -322,13 +322,16 @@ class WordService:
         docs = db.collection(self.collection_name).where(
             "word", "==", word).limit(1).get()
         if docs:
-            docs[0]._reference.set({
-                "mean": mean,
-                "taught": taught,
-                "updated_at": datetime.utcnow(),
-                "cnt": firestore.Increment(1),
-            }, merge=True)
-            return True
+            if docs[0].to_dict()["mean"] == mean:
+                return False
+            else:
+                docs[0]._reference.set({
+                    "mean": mean,
+                    "taught": taught,
+                    "updated_at": datetime.utcnow(),
+                    "cnt": firestore.Increment(1),
+                }, merge=True)
+                return True
         return False
 
     def update_kind(self, word: str, kind: str):
