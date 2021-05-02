@@ -206,6 +206,8 @@ class WordService:
                     "word", "==", key).limit(1).get()
                 if docs:
                     known_list.append({"word": key, "kind": value})
+                elif teach_word == key:
+                    pass
                 else:
                     unknown_list.append({"word": key, "kind": value})
                     unknown_ref = db.collection(
