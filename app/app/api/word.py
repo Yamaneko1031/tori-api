@@ -180,6 +180,14 @@ def trend_tweet():
     return {"detail": "success"}
 
 
+@router.post("/trend_tweet_force", tags=["word"])
+def trend_tweet_force(word: str):
+    """ 指定したトレンドワードをツイートする
+    """
+    word_service.trend_tweet_force(word)
+    return {"detail": "success"}
+
+
 @router.post("/relation_tag_tweet", tags=["word"])
 def relation_tag_tweet():
     """ タグに関連する単語のツイート

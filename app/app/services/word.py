@@ -433,6 +433,21 @@ class WordService:
         if not self.ng_text_check(msg):
             tweet_api.update_status(msg)
 
+    def trend_tweet_force(self, trend_word: str):
+        """ 指定したトレンドワードをツイートする
+        """
+        self.get_knowns_list(mean=trend_word)
+        # 内容を保存
+        id = self.create_temp(trend_word.replace("#", ""), "意味")
+        msg = ("最近「{}」って言葉をよく耳にするよ！\n"
+                "でも、むーちゃんは何の事かよく分かんない。\n"
+                "だれか教えにきて欲しいな。\n"
+                "https://torichan.app/ext/{}").format(
+                    trend_word, id)
+
+        # ツイートする
+        self.post_tweet(msg)
+
     def trend_tweet(self):
         """ ツイッタートレンドからランダムでピックアップしてツイートする
         """
