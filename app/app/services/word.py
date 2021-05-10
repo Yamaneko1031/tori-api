@@ -732,6 +732,22 @@ class WordService:
         # ツイート
         self.post_tweet(msg)
 
+    def follow_back(self):
+        """ フォローバック処理
+        """
+        #フォロワーのアカウントデータを取得
+        follower_list= tweet_api.followers(count=50)
+        for follower in follower_list:
+            if not follower.following:
+                if not follower.protected:
+                    tweet_api.create_friendship(follower.id)
+                else:
+                    # 鍵垢はしない
+                    pass
+            else:
+                # フォロー済み
+                pass
+
     def create_temp(self, word: str, kind: str):
         """ テンポラリに情報を保存
         """

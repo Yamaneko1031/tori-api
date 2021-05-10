@@ -28,18 +28,19 @@ tag_service = services.tag_instance
 # data = word_service.get_topic_word(taught="aaaaaa")
 # print(data)
 
+word_service.test_tweet()
 
-docs = db.collection("words").stream()
-index = 0
-for doc in docs:
-    doc._reference.set({
-        "index": index
-    },merge=True)
-    index = index + 1
+# docs = db.collection("words").stream()
+# index = 0
+# for doc in docs:
+#     doc._reference.set({
+#         "index": index
+#     },merge=True)
+#     index = index + 1
 
-docs = db.collection("system").document("TOTAL").set({
-        "word_cnt": index
-    },merge=True)
+# docs = db.collection("system").document("TOTAL").set({
+#         "word_cnt": index
+#     },merge=True)
 
 # word_service.post_tweet("殺すぞ")
 

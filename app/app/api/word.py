@@ -222,3 +222,11 @@ def janken_tweet():
     """
     word_service.janken_tweet()
     return {"detail": "success"}
+
+
+@router.post("/follow_back", tags=["word"])
+def follow_back():
+    """ フォローバック処理
+    """
+    word_service.follow_back()
+    return {"detail": "success"}
