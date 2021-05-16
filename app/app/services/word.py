@@ -427,11 +427,31 @@ class WordService:
 
         return session_id
 
+    def time_test(self):
+        LIMIT_CNT = 60
+        tweet_cnt = system_service.get_tweet_cnt()
+        if tweet_cnt <= LIMIT_CNT:
+            dt_now = datetime.utcnow()
+            system_service.add_tweet_cnt()
+            if tweet_cnt == LIMIT_CNT:
+                nokori = 60 - dt_now.minute
+                if 0 < nokori:
+                    print("いっぱいお話ししてちょっと疲れたの。\n{}分くらい休憩するの。".format(nokori))
+
     def post_tweet(self, msg):
         """ ツイートする
         """
-        if not self.ng_text_check(msg):
-            tweet_api.update_status(msg)
+        LIMIT_CNT = 95
+        tweet_cnt = system_service.get_tweet_cnt()
+        if tweet_cnt <= LIMIT_CNT:
+            if not self.ng_text_check(msg):
+                tweet_api.update_status(msg)
+                system_service.add_tweet_cnt()
+                if tweet_cnt == LIMIT_CNT:
+                    dt_now = datetime.utcnow()
+                    nokori = 60 - dt_now.minute
+                    if 0 < nokori:
+                        tweet_api.update_status("いっぱいお話ししてちょっと疲れたの。\n{}分くらい休憩するの。".format(nokori))
 
     def trend_tweet_force(self, trend_word: str):
         """ 指定したトレンドワードをツイートする
@@ -709,7 +729,7 @@ class WordService:
                 # ツイート内容生成
                 msg = ("今日はじゃんけんで遊んでもらえたの！\n"
                        "{}勝{}敗でむーちゃんが勝ってたよ！\n"
-                       "またじゃんけんしきて欲しいな！\n"
+                       "またじゃんけんしにきて欲しいな！\n"
                        "https://torichan.app/ext/janken").format(data["lose_cnt"], data["win_cnt"])
             elif data["win_cnt"] > data["lose_cnt"]:
                 # ツイート内容生成
@@ -748,7 +768,7 @@ class WordService:
                 # フォロー済み
                 pass
 
-    def create_temp(self, word: str, kind: str):
+    def create_temp(self, word: str, kind: str, maen: str=""):
         """ テンポラリに情報を保存
         """
         doc = db.collection(self.collection_temporary).document()
@@ -756,10 +776,18 @@ class WordService:
             "cnt": 0,
             "kind": kind,
             "word": word,
+            "mean": maen,
             "created_at": datetime.utcnow()
         }
         )
         return doc.id
+
+    def create_temp_remember_word(self, word: str):
+        """ 覚えた単語の情報をテンポラリに保存
+        """
+        data = self.get(word)
+        id = self.create_temp(word, "覚えた単語", data.mean)
+        return id
 
     def get_temp(self, id: str):
         """ テンポラリから情報を取得

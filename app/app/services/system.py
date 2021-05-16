@@ -179,5 +179,26 @@ class SystemService:
                     ret[key] = doc.to_dict()[key]
         return ret
 
+    def get_tweet_cnt(self):
+        doc_ref = db.collection(
+            self.collection_name).document("TOTAL")
+        data = doc_ref.get().to_dict()
+        if "tweet_cnt" in data:
+            return data["tweet_cnt"]
+        return 0
+
+    def add_tweet_cnt(self):
+        doc_ref = db.collection(
+            self.collection_name).document("TOTAL")
+        doc_ref.set({
+            "tweet_cnt": firestore.Increment(1)
+        }, merge=True)
+
+    def reset_tweet_cnt(self):
+        doc_ref = db.collection(
+            self.collection_name).document("TOTAL")
+        doc_ref.set({
+            "tweet_cnt": 0
+        }, merge=True)
 
 system_instance = SystemService()

@@ -28,7 +28,21 @@ tag_service = services.tag_instance
 # data = word_service.get_topic_word(taught="aaaaaa")
 # print(data)
 
-word_service.test_tweet()
+# system_service.reset_tweet_cnt()
+
+# system_service.add_tweet_cnt()
+# system_service.add_tweet_cnt()
+
+# data = system_service.get_tweet_cnt()
+# print(data)
+
+dt_now = datetime.utcnow()
+nokori = 60 - dt_now.minute
+if 0 < nokori:
+    print("いっぱいお話したから{}分くらい休憩するの。".format(nokori))
+    
+
+# word_service.test_tweet()
 
 # docs = db.collection("words").stream()
 # index = 0

@@ -230,3 +230,19 @@ def follow_back():
     """
     word_service.follow_back()
     return {"detail": "success"}
+
+
+@router.post("/create_temp_remember_word", tags=["word"])
+def create_temp_remember_word(word: str):
+    """ 覚えた単語の情報をテンポラリに保存
+    """
+    id = word_service.create_temp_remember_word(word)
+    return {"id": id}
+
+
+@router.post("/test", tags=["word"])
+def time_test():
+    """ テスト処理
+    """
+    word_service.time_test()
+    return {"detail": "success"}
