@@ -34,6 +34,6 @@ def add_janken_result():
     return system_service.get_janken_result_total()
 
 
-@router.get("/reset_tweet_cnt", tags=["system"])
+@router.put("/reset_tweet_cnt", tags=["system"])
 def reset_tweet_cnt():
     return system_service.reset_tweet_cnt()
