@@ -768,7 +768,7 @@ class WordService:
                 # フォロー済み
                 pass
 
-    def create_temp(self, word: str, kind: str, maen: str=""):
+    def create_temp(self, word: str, kind: str, maen: str="", set_id: str=""):
         """ テンポラリに情報を保存
         """
         doc = db.collection(self.collection_temporary).document()
@@ -777,6 +777,7 @@ class WordService:
             "kind": kind,
             "word": word,
             "mean": maen,
+            "id": set_id,
             "created_at": datetime.utcnow()
         }
         )
@@ -789,6 +790,13 @@ class WordService:
         id = self.create_temp(word, "覚えた単語", data.mean)
         return id
 
+    def create_temp_fromt(self, word: str, set_id: str):
+        """ フロント側から情報をテンポラリに保存
+        """
+        data = self.get(word)
+        id = self.create_temp(word, "覚えた単語", data.mean, set_id)
+        return id
+
     def get_temp(self, id: str):
         """ テンポラリから情報を取得
         """
@@ -797,5 +805,13 @@ class WordService:
             return doc.to_dict()
         return
 
+    def get_temp_front(self, id: str):
+        """ テンポラリから情報を取得
+        """
+        docs = db.collection(self.collection_temporary).where(
+            "id", "==", id).limit(1).get()
+        if docs and docs[0].exists:
+            return docs[0].to_dict()
+        return
 
 word_instance = WordService()

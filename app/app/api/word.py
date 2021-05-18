@@ -216,6 +216,17 @@ def get_temp(id: str):
     return ret
 
 
+@router.get("/word_temp_front/{cnt}", tags=["word"])
+def get_temp_front(cnt: int, session_id: Optional[str] = Header(None)):
+    """ テンポラリから情報を取得する
+    """
+    get_id = "{}{}".format(session_id, cnt)
+    ret = word_service.get_temp_front(get_id)
+    if not ret:
+        raise HTTPException(status_code=404, detail="Temp not found.")
+    return ret
+
+
 @router.post("/janken_tweet", tags=["word"])
 def janken_tweet():
     """ じゃんけんの結果をツイート
@@ -238,6 +249,17 @@ def create_temp_remember_word(word: str):
     """
     id = word_service.create_temp_remember_word(word)
     return {"id": id}
+
+
+@router.post("/create_temp_fromt", tags=["word"])
+def create_temp_fromt(word: str, cnt: int, session_id: Optional[str] = Header(None)):
+    """ フロント側から情報をテンポラリに保存
+    """
+    set_id = "{}{}".format(session_id, cnt)
+    id = word_service.create_temp_fromt(word, set_id)
+    if not id:
+        raise HTTPException(status_code=404, detail="Not found.")
+    return {"detail": "success"}
 
 
 @router.post("/test", tags=["word"])
