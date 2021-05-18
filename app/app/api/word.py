@@ -216,12 +216,11 @@ def get_temp(id: str):
     return ret
 
 
-@router.get("/word_temp_front/{cnt}", tags=["word"])
-def get_temp_front(cnt: int, session_id: Optional[str] = Header(None)):
+@router.get("/word_temp_front/{id}", tags=["word"])
+def get_temp_front(id: str):
     """ テンポラリから情報を取得する
     """
-    get_id = "{}{}".format(session_id, cnt)
-    ret = word_service.get_temp_front(get_id)
+    ret = word_service.get_temp_front(id)
     if not ret:
         raise HTTPException(status_code=404, detail="Temp not found.")
     return ret
