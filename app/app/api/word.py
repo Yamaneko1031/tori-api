@@ -33,6 +33,14 @@ def get_word(word: str):
     return ret_word
 
 
+@router.delete("/words/{word}", tags=["word"])
+def delete_word(word: str):
+    """ 単語削除
+    """
+    word_service.delete(word)
+    return {"detail": "success"}
+
+
 @router.put("/word_mean", response_model=models.WordAll, tags=["word"])
 def update_word_mean(word_update: models.WordUpdate, session_id: Optional[str] = Header(None)):
     """ 単語情報更新
