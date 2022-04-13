@@ -25,6 +25,11 @@ system_service = services.system_instance
 word_service = services.word_instance
 tag_service = services.tag_instance
 
+print("test")
+
+text = "asdfasd"
+print(word_service.ng_text_check(text))
+
 # data = word_service.get_topic_word(taught="aaaaaa")
 # print(data)
 
@@ -36,10 +41,10 @@ tag_service = services.tag_instance
 # data = system_service.get_tweet_cnt()
 # print(data)
 
-dt_now = datetime.utcnow()
-nokori = 60 - dt_now.minute
-if 0 < nokori:
-    print("いっぱいお話したから{}分くらい休憩するの。".format(nokori))
+# dt_now = datetime.utcnow()
+# nokori = 60 - dt_now.minute
+# if 0 < nokori:
+#     print("いっぱいお話したから{}分くらい休憩するの。".format(nokori))
     
 
 # word_service.test_tweet()

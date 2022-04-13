@@ -1,3 +1,4 @@
+import calendar
 import os
 import random
 import logging
@@ -78,6 +79,7 @@ def create_tr(transaction: Transaction, word_create: models.WordCreate, tags: Li
 
 
 class WordService:
+    collection_system = "system"
     collection_name = "words"
     collection_unknown = "unknowns"
     collection_session = "sessions"
@@ -627,19 +629,22 @@ class WordService:
     def word_tag_add_tweet(self, word: str, tag: str):
         """ タグ追加についてツイートする
         """
-        msg = ""
-        tag_data = tag_service.get_tag(tag)
-        if tag_data:
-            if tag_data["part"] == "形容詞":
-                msg = ("{}は{}んだって！").format(word, tag)
-            elif tag_data["part"] == "形容動詞":
-                msg = ("{}は{}なんだって！").format(word, tag)
+        if not self.ng_text_check(word):
+            msg = ""
+            tag_data = tag_service.get_tag(tag)
+            if tag_data:
+                if tag_data["part"] == "形容詞":
+                    msg = ("{}は{}んだって！").format(word, tag)
+                elif tag_data["part"] == "形容動詞":
+                    msg = ("{}は{}なんだって！").format(word, tag)
 
-        if msg:
-            self.post_tweet(msg)
-            return msg
+            if msg:
+                self.post_tweet(msg)
+                return msg
+            else:
+                return
         else:
-            return
+            print("remembered_tweet ng word")
 
     def word_relation_tag_tweet(self):
         """ タグ追加についてツイートする
@@ -813,5 +818,17 @@ class WordService:
         if docs and docs[0].exists:
             return docs[0].to_dict()
         return
+
+    def get_one_day_learn_words(self, year: int, month: int, day: int):
+        print("{}/{}/{}".format(year, month, day))
+        docs = db.collection(self.collection_name).where(
+            "updated_at", ">=", datetime(year,month,day,0,0,0)).where(
+                "updated_at", "<=", datetime(year,month,day,23,59,59)).limit(50).get()
+
+        word_list = []
+        for doc in docs:
+            word_list.append(doc.to_dict())
+        
+        return word_list
 
 word_instance = WordService()

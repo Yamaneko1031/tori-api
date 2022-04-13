@@ -4,6 +4,9 @@ import random
 from uuid import uuid4
 
 from fastapi import APIRouter, Body, HTTPException, Header, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from google.cloud import firestore
 
 from app import models, services
@@ -37,3 +40,19 @@ def add_janken_result():
 @router.put("/reset_tweet_cnt", tags=["system"])
 def reset_tweet_cnt():
     return system_service.reset_tweet_cnt()
+
+
+
+# from starlette.routing import Router
+# static_router = Router()
+# app.mount("/static", other_router)
+
+# static_router.mount("/static", StaticFiles(directory="app/static"), name="static")
+# templates = Jinja2Templates(directory="app/templates")
+
+# @static_router.get("/items/{id}", response_class=HTMLResponse)
+# async def read_item(request: Request, id: str):
+#     print(id)
+#     print(templates)
+#     data = {"request": request, "id": "aaa", "test": "aaf534dgfa"}
+#     return templates.TemplateResponse("item.html", data)
