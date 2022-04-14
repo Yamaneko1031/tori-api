@@ -104,6 +104,10 @@ class SystemService:
         doc = db.collection(self.collection_name).document("NG_LIST").get()
         return doc.to_dict()["negative"]
 
+    def get_ng_ip(self):
+        doc = db.collection(self.collection_name).document("NG_LIST").get()
+        return doc.to_dict()["ip"]
+    
     def add_janken_result(self, result, session_id):
         if result == 0:
             set_result = "win_cnt"

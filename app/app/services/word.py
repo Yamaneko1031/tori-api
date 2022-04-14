@@ -1,4 +1,3 @@
-import calendar
 import os
 import random
 import logging
@@ -90,6 +89,8 @@ class WordService:
         """
         # NGリスト取得
         self.ng_list = system_service.get_ng_list()
+        # NGリスト取得
+        self.ng_ip = system_service.get_ng_ip()
         print(self)
         # print(self.ng_list)
 
@@ -105,6 +106,7 @@ class WordService:
             if self.update_mean(word_create.word, word_create.mean, taught):
                 self.mean_update_tweet(docs[0]._reference)
             ref = docs[0]._reference
+            retData["pre"] = models.WordAll(**docs[0].to_dict())
         else:
             transaction = db.transaction()
             ref = create_tr(transaction=transaction,
@@ -547,12 +549,20 @@ class WordService:
                 return True
         return False
 
+    def ng_ip_check(self, ip_address):
+        """ IPアドレスがにNG_IPに入っていないかチェックする
+        """
+        for ng_ip in self.ng_ip:
+            if ng_ip in ip_address:
+                return True
+        return False
+    
     def mean_update_tweet(self, word_ref):
         """ 覚えたワードについてツイートする
         """
         word_data = word_ref.get().to_dict()
 
-        if not self.ng_word_check(word_data["word"]):
+        if not self.ng_text_check(word_data["word"]):
             msg = ""
             data = {}
             # ツイート内容生成
@@ -573,7 +583,7 @@ class WordService:
         """
         word_data = word_ref.get().to_dict()
 
-        if not self.ng_word_check(word_data["word"]):
+        if not self.ng_text_check(word_data["word"]):
             msg = ""
             data = {}
             # ツイート内容生成
@@ -612,7 +622,7 @@ class WordService:
             print("remembered_tweet faild")
             return
 
-        if not self.ng_word_check(doc_dict["word"]):
+        if not self.ng_text_check(doc_dict["word"]):
             # ツイート内容生成
             msg = ("今「{}」って言葉を教えてもらったの！\n"
                    "「{}」のことだよ！").format(doc_dict["word"], doc_dict["mean"])

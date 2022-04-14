@@ -1,4 +1,5 @@
 from typing import Optional
+from app.models.user_log import TeachLogCreate
 
 from fastapi import APIRouter, HTTPException, Header, Request
 
@@ -8,16 +9,23 @@ router = APIRouter()
 
 tag_service = services.tag_instance
 word_service = services.word_instance
+user_log_service = services.user_log_instance
 
 
 @router.post("/words", tags=["word"])
-def create_word(word_create: models.WordCreate, session_id: Optional[str] = Header(None)):
+def create_word(request: Request, word_create: models.WordCreate, session_id: Optional[str] = Header(None)):
     """ 新規単語の追加
         意味を分解して知ってる単語、知らない単語に分ける
         知らない単語はDBに追加される
         知っている単語、知らない単語の中からランダムで一つ選んで返す
     """
     ret_data = word_service.create(word_create, session_id)
+    
+    if "pre" in ret_data:
+        user_log_service.add_mean_update_log(word_create.word, word_create.mean, ret_data["pre"].mean, request.client.host, session_id)
+    else:
+        user_log_service.add_teach_log(word_create.word, word_create.mean, request.client.host, session_id)
+        
     if not ret_data:
         raise HTTPException(status_code=404, detail="word already.")
     return ret_data
@@ -41,8 +49,8 @@ def delete_word(word: str):
     return {"detail": "success"}
 
 
-@router.put("/word_mean", response_model=models.WordAll, tags=["word"])
-def update_word_mean(word_update: models.WordUpdate, session_id: Optional[str] = Header(None)):
+@router.put("/word_mean", response_model=bool, tags=["word"])
+def update_word_mean(request: Request, word_update: models.WordUpdate, session_id: Optional[str] = Header(None)):
     """ 単語情報更新
     """
     ret_word = word_service.update_mean(
@@ -52,7 +60,7 @@ def update_word_mean(word_update: models.WordUpdate, session_id: Optional[str] =
     return ret_word
 
 
-@router.put("/word_good/{word}", response_model=models.WordAll, tags=["word"])
+@router.put("/word_good/{word}", tags=["word"])
 def update_word_good(word: str):
     """ good加算
     """
@@ -62,7 +70,7 @@ def update_word_good(word: str):
     return {"detail": "success"}
 
 
-@router.put("/word_bad/{word}", response_model=models.WordAll, tags=["word"])
+@router.put("/word_bad/{word}", tags=["word"])
 def update_word_bad(word: str):
     """ bad加算
     """
