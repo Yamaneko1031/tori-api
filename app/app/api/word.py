@@ -278,8 +278,9 @@ def create_temp_fromt(word: str, cnt: int, session_id: Optional[str] = Header(No
 
 
 @router.post("/test", tags=["word"])
-def time_test():
+def time_test(request: Request):
     """ テスト処理
     """
-    word_service.time_test()
+    # word_service.time_test()
+    user_log_service.add_teach_log("word", "mean", request.client.host, "session_id")
     return {"detail": "success"}
