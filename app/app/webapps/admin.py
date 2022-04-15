@@ -12,6 +12,7 @@ router = APIRouter()
 
 tag_service = services.tag_instance
 word_service = services.word_instance
+user_log_service = services.user_log_instance
 
 templates = Jinja2Templates(directory="app/templates")
 router = APIRouter(include_in_schema=False)
@@ -23,6 +24,7 @@ def admin(request: Request):
 @router.get("/admin/{year}/{month}/{day}")
 def admin(request: Request, year: int, month: int, day: int):
     ret_word = word_service.get_one_day_learn_words(year, month, day)
+    ret_teach_logs = user_log_service.get_teach_logs(year, month, day)
     # s = word["word"]
     # m = re.match(r'([a-z]+)@([a-z]+)\.com', s)
     # jaconv.kata2hira(word1)
@@ -30,4 +32,4 @@ def admin(request: Request, year: int, month: int, day: int):
     # for word in ret_word:
     #     if re.match(r'.*た.*く.*っ.*ち.*', word['word']):
     #         print(word["word"])
-    return templates.TemplateResponse("learn_word.html", {"request": request, "data": ret_word, "ip": request.client.host})
+    return templates.TemplateResponse("learn_word.html", {"request": request, "data": ret_teach_logs})

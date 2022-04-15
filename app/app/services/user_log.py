@@ -27,7 +27,7 @@ class UserLogService:
 
     def add_teach_log(self, word: str, mean: str, ip_adress: str, session_id: str):
         day_ref = db.collection(
-            self.collection_name).document(datetime.today().strftime("%y-%m-%d"))
+            self.collection_name).document(datetime.today().strftime("%Y-%m-%d"))
         doc = day_ref.collection(self.sub_collection_teach).document()
         doc.set({
             "word": word,
@@ -41,7 +41,7 @@ class UserLogService:
         
     def add_mean_update_log(self, word: str, mean: str, pre_mean: str, ip_adress: str, session_id: str):
         day_ref = db.collection(
-            self.collection_name).document(datetime.today().strftime("%y-%m-%d"))
+            self.collection_name).document(datetime.today().strftime("%Y-%m-%d"))
         doc = day_ref.collection(self.sub_collection_mean_update).document()
         doc.set({
             "word": word,
@@ -53,5 +53,18 @@ class UserLogService:
         })
         
         return doc.id
+    
+    def get_teach_logs(self, year: int, month: int, day: int):
+        # print("{:04}-{:02}-{:02}".format(year, month, day))
+        day_ref = db.collection(
+            self.collection_name).document("{:04}-{:02}-{:02}".format(year, month, day))
+        
+        docs = day_ref.collection(self.sub_collection_teach).get()
+
+        teach_list = []
+        for doc in docs:
+            teach_list.append(doc.to_dict())
+        
+        return teach_list
     
 user_log_instance = UserLogService()

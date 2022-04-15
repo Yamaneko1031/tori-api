@@ -6,10 +6,9 @@
 </head>
 <body>
     <a href="/admin">カレンダー</a>
-    <p>{{ ip }}</p>
     <h1>覚えた単語</h1>
     {% for i in data %}
-    <li>{{ i.word }} → {{ i.mean }}</li>
+    <li>{{ i.word }} → {{ i.mean }} → {{ i.ip_address }}</li>
     {% endfor %}
 </body>
 </html>
