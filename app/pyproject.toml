@@ -16,6 +16,7 @@ jaconv = "^0.3"
 pykakasi = "^2.0.6"
 Jinja2 = "3.0.0"
 aiofiles = "^0.8.0"
+python-multipart = "^0.0.5"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.5"

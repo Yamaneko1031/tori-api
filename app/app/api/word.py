@@ -19,12 +19,12 @@ def create_word(request: Request, word_create: models.WordCreate, session_id: Op
         知らない単語はDBに追加される
         知っている単語、知らない単語の中からランダムで一つ選んで返す
     """
-    ret_data = word_service.create(word_create, session_id)
-    
+    ret_data = word_service.create(word_create, session_id, request.client.host)                
+                
     if "pre" in ret_data:
-        user_log_service.add_mean_update_log(word_create.word, word_create.mean, ret_data["pre"].mean, request.client.host, session_id)
+        user_log_service.add_mean_update_log(word_create.word, word_create.mean, ret_data["pre"].mean, request.client.host, session_id, ret_data["tweet"]["stat"], ret_data["tweet"]["id"])
     else:
-        user_log_service.add_teach_log(word_create.word, word_create.mean, request.client.host, session_id)
+        user_log_service.add_teach_log(word_create.word, word_create.mean, request.client.host, session_id, ret_data["tweet"]["stat"], ret_data["tweet"]["id"])
         
     if not ret_data:
         raise HTTPException(status_code=404, detail="word already.")
@@ -164,6 +164,16 @@ def get_topic_word(session_id: Optional[str] = Header(None)):
     return word
 
 
+@router.post("/delete_tweet/{id}", tags=["word"])
+def delete_tweet(id: int):
+    """ ツイートを削除する
+    """
+    if word_service.delete_tweet(id):
+        return {"detail": "success"}
+    else:
+        return {"detail": "failed"}
+
+
 @router.post("/remembered_tweet", tags=["word"])
 def remembered_tweet():
     """ 直近で覚えたワードについてツイートする
@@ -282,5 +292,7 @@ def time_test(request: Request):
     """ テスト処理
     """
     # word_service.time_test()
-    user_log_service.add_teach_log("word", "mean", request.client.host, "session_id")
+    print(request.client.host)
+    ret = word_service.post_tweet("テストしてるの！", request.client.host)
+    user_log_service.add_teach_log("word", "mean", request.client.host, "session_id", ret["stat"], ret["id"])
     return {"detail": "success"}

@@ -104,6 +104,16 @@ class SystemService:
         doc = db.collection(self.collection_name).document("NG_LIST").get()
         return doc.to_dict()["negative"]
 
+    def get_ng_regex(self):
+        doc = db.collection(self.collection_name).document("NG_LIST").get()
+        return doc.to_dict()["regex"]
+
+    def add_ng_ip(self, ip):
+        doc_ref = db.collection(self.collection_name).document("NG_LIST")
+        doc_ref.set({
+            "ip": firestore.ArrayUnion([ip])
+        }, merge=True)
+        
     def get_ng_ip(self):
         doc = db.collection(self.collection_name).document("NG_LIST").get()
         return doc.to_dict()["ip"]

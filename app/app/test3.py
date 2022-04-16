@@ -25,10 +25,27 @@ system_service = services.system_instance
 word_service = services.word_instance
 tag_service = services.tag_instance
 
-print("test")
+# aa = word_service.test_tweet("テストしてるの！")
+# print(aa)
 
-text = "asdfasd"
-print(word_service.ng_text_check(text))
+# aa = word_service.delete_tweet(1515157446234279937)
+# print(aa)
+
+# word_service.ng_ip_check("127.0.0.1")
+word_service.post_tweet("てすとしてるの！", "127.0.0.1")
+
+# text = "たｋｋっくｄｓｄ"
+
+# print( word_service.ng_text_check(text) )
+    
+# kana = jaconv.kata2hira(text)
+# if re.match(r'.*た.*く.*ち.*', kana):
+#     print(kana)
+
+# print("test")
+
+# text = "asdfasd"
+# print(word_service.ng_text_check(text))
 
 # data = word_service.get_topic_word(taught="aaaaaa")
 # print(data)
