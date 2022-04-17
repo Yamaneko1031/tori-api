@@ -11,7 +11,7 @@ class BaseTeachLog(BaseModel):
         self.mean = mean
         self.ip_adress = ip_adress
         self.session_id = session_id
-        
+
     word: str = ""
     mean: str = ""
     ip_address: str = ""

@@ -458,19 +458,19 @@ class WordService:
         """
         LIMIT_CNT = 95
         ret = {}
-        ret["stat"] = "none"
+        ret["state"] = "none"
         ret["id"] = 0
         tweet_cnt = system_service.get_tweet_cnt()
         if tweet_cnt > LIMIT_CNT:
-            ret["stat"] = "limit"
+            ret["state"] = "limit"
         elif self.ng_ip_check(ip_address):
-            ret["stat"] = "ng_ip"
+            ret["state"] = "ng_ip"
         elif self.ng_text_check(msg):
-            ret["stat"] = "ng_text"
+            ret["state"] = "ng_text"
         else:
             status = tweet_api.update_status(msg)
             system_service.add_tweet_cnt()
-            ret["stat"] = "tweet"
+            ret["state"] = "tweet"
             ret["id"] = status.id
             if tweet_cnt == LIMIT_CNT:
                 dt_now = datetime.utcnow()

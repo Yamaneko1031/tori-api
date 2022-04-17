@@ -1,5 +1,3 @@
-import os
-import random
 import logging
 from uuid import uuid4
 from datetime import datetime
@@ -59,8 +57,7 @@ class UserLogService:
                 "%Y/%m/%d %H:%M:%S")
             data["id"] = doc.id
             if "word_ref" in data:
-                word_doc = db.collection(self.collection_word).document(
-                    data["word_ref"]).get()
+                word_doc = data["word_ref"].get()
                 if word_doc:
                     word_data = word_doc.to_dict()
                     data["now_mean"] = word_data["mean"]

@@ -26,6 +26,16 @@ system_service = services.system_instance
 word_service = services.word_instance
 tag_service = services.tag_instance
 
+
+a = models.WordCreate()
+a.word = "test"
+a.mean = "test2"
+a.kind = ""
+a.kind = ""
+
+word_service.create(a, "a", "111")
+
+
 # aa = word_service.test_tweet("テストしてるの！")
 # print(aa)
 
