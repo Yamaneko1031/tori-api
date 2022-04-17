@@ -89,11 +89,14 @@ class WordService:
         """ コンストラクタ
         """
         # NGリスト取得
+        self.renew_ng_list()
+        
+        
+    def renew_ng_list(self):
         self.ng_list = system_service.get_ng_list()
         self.ng_regex = system_service.get_ng_regex()
         self.ng_ip = system_service.get_ng_ip()
-        print(self)
-        # print(self.ng_list)
+        
 
     def create(self, word_create: models.WordCreate, taught: str, ip_address: str) -> models.WordAll:
         """ 新規単語の追加
@@ -103,11 +106,14 @@ class WordService:
 
         docs = db.collection(self.collection_name).where(
             "word", "==", word_create.word).limit(1).get()
+
         if docs:
             if self.update_mean(word_create.word, word_create.mean, taught):
-                retData["tweet"] = self.mean_update_tweet(docs[0]._reference, ip_address)
+                retData["tweet"] = self.mean_update_tweet(
+                    docs[0]._reference, ip_address)
             ref = docs[0]._reference
-            retData["pre"] = models.WordAll(**docs[0].to_dict())
+            retData["action"] = "更新"
+            retData["pre_mean"] = ref.get().to_dict()["word"]
         else:
             transaction = db.transaction()
             ref = create_tr(transaction=transaction,
@@ -119,9 +125,13 @@ class WordService:
                             collect_session=self.collection_session
                             )
             system_service.add_word_create(word_create.word)
-            retData["tweet"] = self.word_create_tweet(ref, word_create.secret_tag, ip_address)
+            retData["tweet"] = self.word_create_tweet(
+                ref, word_create.secret_tag, ip_address)
+            retData["action"] = "新規"
+            retData["pre_mean"] = ""
 
         retData["create"] = models.WordAll(**ref.get().to_dict())
+        retData["create_ref"] = ref
 
         return retData
 
@@ -448,15 +458,15 @@ class WordService:
         """
         LIMIT_CNT = 95
         ret = {}
-        ret["stat"] = "none"   
+        ret["stat"] = "none"
         ret["id"] = 0
         tweet_cnt = system_service.get_tweet_cnt()
         if tweet_cnt > LIMIT_CNT:
             ret["stat"] = "limit"
         elif self.ng_ip_check(ip_address):
-            ret["stat"] = "ng_ip"      
+            ret["stat"] = "ng_ip"
         elif self.ng_text_check(msg):
-            ret["stat"] = "ng_text"      
+            ret["stat"] = "ng_text"
         else:
             status = tweet_api.update_status(msg)
             system_service.add_tweet_cnt()
@@ -466,20 +476,21 @@ class WordService:
                 dt_now = datetime.utcnow()
                 nokori = 60 - dt_now.minute
                 if 0 < nokori:
-                    tweet_api.update_status("いっぱいお話ししてちょっと疲れたの。\n{}分くらい休憩するの。".format(nokori))
-            
-        return ret                
+                    tweet_api.update_status(
+                        "いっぱいお話ししてちょっと疲れたの。\n{}分くらい休憩するの。".format(nokori))
+
+        return ret
 
     def delete_tweet(self, id):
         """ ツイート削除する
-        """        
+        """
         try:
             # ツイートを消去
             tweet_api.destroy_status(id)
             return True
         except:
             return False
-    
+
     def trend_tweet_force(self, trend_word: str):
         """ 指定したトレンドワードをツイートする
         """
@@ -487,10 +498,10 @@ class WordService:
         # 内容を保存
         id = self.create_temp(trend_word.replace("#", ""), "意味")
         msg = ("最近「{}」って言葉をよく耳にするよ！\n"
-                "でも、むーちゃんは何の事かよく分かんない。\n"
-                "だれか教えにきて欲しいな。\n"
-                "https://torichan.app/ext/{}").format(
-                    trend_word, id)
+               "でも、むーちゃんは何の事かよく分かんない。\n"
+               "だれか教えにきて欲しいな。\n"
+               "https://torichan.app/ext/{}").format(
+            trend_word, id)
 
         # ツイートする
         self.post_tweet(msg)
@@ -567,25 +578,29 @@ class WordService:
     def ng_text_check(self, text):
         """ テキスト内にNGワード入っていないかチェックする
         """
-        kana = jaconv.kata2hira(text)
+        check_text = ''.join(text.split())
+        check_text = check_text.lower()
+        check_text = jaconv.kata2hira(check_text)
+
         # 正規表現のチェック
         for ng_regex in self.ng_regex:
-            if re.match(ng_regex, kana):
+            if re.match(ng_regex, check_text):
                 return True
         # 部分一致のチェック
         for ng_word in self.ng_list:
-            if ng_word in kana:
+            if ng_word in check_text:
                 return True
         return False
 
     def ng_ip_check(self, ip_address: str):
         """ IPアドレスがにNG_IPに入っていないかチェックする
         """
+        check_ip_address = ''.join(ip_address.split())
         for ng_ip in self.ng_ip:
-            if ng_ip == ip_address:
+            if ng_ip == check_ip_address:
                 return True
         return False
-    
+
     def mean_update_tweet(self, word_ref, ip_address: str):
         """ 覚えたワードについてツイートする
         """
@@ -594,15 +609,15 @@ class WordService:
         data = {}
         # ツイート内容生成
         msg = ("「{}」の意味を勘違いしてたの！\n"
-                "ほんとは「{}」のことだよ！").format(word_data["word"], word_data["mean"])
-        
+               "ほんとは「{}」のことだよ！").format(word_data["word"], word_data["mean"])
+
         ret = self.post_tweet(msg, ip_address)
-        if ret["stat"] == "tweet":
+        if ret["state"] == "tweet":
             # ツイートしたワードの情報更新
             data["tweeted_at"] = datetime.utcnow()
             data["updated_at"] = datetime.utcnow()
             word_ref.update(data)
-            
+
         return ret
 
     def word_create_tweet(self, word_ref, tag: str, ip_address: str):
@@ -614,26 +629,26 @@ class WordService:
         data = {}
         # ツイート内容生成
         msg = ("今「{}」って言葉を教えてもらったの！\n"
-                "「{}」のことだよ！").format(word_data["word"], word_data["mean"])
+               "「{}」のことだよ！").format(word_data["word"], word_data["mean"])
 
         if tag:
             tag_data = tag_service.get_tag(tag)
             if tag_data:
                 if tag_data["part"] == "形容詞":
                     msg = (msg +
-                            "\nあと「{}」は{}んだよ！").format(word_data["word"], tag_data["text"])
+                           "\nあと「{}」は{}んだよ！").format(word_data["word"], tag_data["text"])
                 elif tag_data["part"] == "形容動詞":
                     msg = (msg +
-                            "\nあと「{}」は{}なんだよ！").format(word_data["word"], tag_data["text"])
+                           "\nあと「{}」は{}なんだよ！").format(word_data["word"], tag_data["text"])
 
         # ツイート
         ret = self.post_tweet(msg, ip_address)
-        if ret["stat"] == "tweet":
+        if ret["state"] == "tweet":
             # ツイートしたワードの情報更新
             data["tweeted_at"] = datetime.utcnow()
             data["updated_at"] = datetime.utcnow()
             word_ref.update(data)
-            
+
         return ret
 
     def remembered_tweet(self):
@@ -797,8 +812,8 @@ class WordService:
     def follow_back(self):
         """ フォローバック処理
         """
-        #フォロワーのアカウントデータを取得
-        follower_list= tweet_api.followers(count=50)
+        # フォロワーのアカウントデータを取得
+        follower_list = tweet_api.followers(count=50)
         for follower in follower_list:
             if not follower.following:
                 if not follower.protected:
@@ -810,7 +825,7 @@ class WordService:
                 # フォロー済み
                 pass
 
-    def create_temp(self, word: str, kind: str, maen: str="", set_id: str=""):
+    def create_temp(self, word: str, kind: str, maen: str = "", set_id: str = ""):
         """ テンポラリに情報を保存
         """
         doc = db.collection(self.collection_temporary).document()
@@ -859,14 +874,14 @@ class WordService:
     def get_one_day_learn_words(self, year: int, month: int, day: int):
         print("{}/{}/{}".format(year, month, day))
         docs = db.collection(self.collection_name).where(
-            "updated_at", ">=", datetime(year,month,day,0,0,0)).where(
-                "updated_at", "<=", datetime(year,month,day,23,59,59)).limit(50).get()
+            "updated_at", ">=", datetime(year, month, day, 0, 0, 0)).where(
+                "updated_at", "<=", datetime(year, month, day, 23, 59, 59)).limit(50).get()
 
         word_list = []
         for doc in docs:
             word_list.append(doc.to_dict())
-        
+
         return word_list
-    
-    
+
+
 word_instance = WordService()

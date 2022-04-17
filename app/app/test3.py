@@ -1,3 +1,4 @@
+
 from google.cloud import firestore
 from datetime import datetime
 import time
@@ -9,17 +10,17 @@ import sys
 
 sys.path.append('/app')
 
-import services
-import models
-
-import jaconv
-from util import morpheme
+import models  # noqa
+import jaconv  # noqa
+from util import morpheme  # noqa
+import services  # noqa
 
 db = firestore.Client()
 
 kakasi = kakasi()
 kakasi.setMode("J", "H")
 conv = kakasi.getConverter()
+
 
 system_service = services.system_instance
 word_service = services.word_instance
@@ -31,13 +32,16 @@ tag_service = services.tag_instance
 # aa = word_service.delete_tweet(1515157446234279937)
 # print(aa)
 
-# word_service.ng_ip_check("127.0.0.1")
-word_service.post_tweet("てすとしてるの！", "127.0.0.1")
+a = word_service.ng_text_check("#fary5")
+# a = word_service.ng_ip_check("221.243.197.154")
+print(a)
+
+# word_service.post_tweet("てすとしてるの！", "127.0.0.1")
 
 # text = "たｋｋっくｄｓｄ"
 
 # print( word_service.ng_text_check(text) )
-    
+
 # kana = jaconv.kata2hira(text)
 # if re.match(r'.*た.*く.*ち.*', kana):
 #     print(kana)
@@ -62,7 +66,7 @@ word_service.post_tweet("てすとしてるの！", "127.0.0.1")
 # nokori = 60 - dt_now.minute
 # if 0 < nokori:
 #     print("いっぱいお話したから{}分くらい休憩するの。".format(nokori))
-    
+
 
 # word_service.test_tweet()
 
@@ -214,62 +218,61 @@ word_service.post_tweet("てすとしてるの！", "127.0.0.1")
 #     print(f'{doc.id} => {doc.to_dict()}')
 
 
-
 # def collection_group_query(db):
 #     # [START fs_collection_group_query_data_setup]
 #     # [START firestore_query_collection_group_dataset]
 #     cities = db.collection(u'cities')
 
-    # sf_landmarks = cities.document(u'SF').collection(u'landmarks')
-    # sf_landmarks.document().set({
-    #     u'name': u'Golden Gate Bridge',
-    #     u'type': u'bridge'
-    # })
-    # sf_landmarks.document().set({
-    #     u'name': u'Legion of Honor',
-    #     u'type': u'museum'
-    # })
-    # la_landmarks = cities.document(u'LA').collection(u'landmarks')
-    # la_landmarks.document().set({
-    #     u'name': u'Griffith Park',
-    #     u'type': u'park'
-    # })
-    # la_landmarks.document().set({
-    #     u'name': u'The Getty',
-    #     u'type': u'museum'
-    # })
-    # dc_landmarks = cities.document(u'DC').collection(u'landmarks')
-    # dc_landmarks.document().set({
-    #     u'name': u'Lincoln Memorial',
-    #     u'type': u'memorial'
-    # })
-    # dc_landmarks.document().set({
-    #     u'name': u'National Air and Space Museum',
-    #     u'type': u'museum'
-    # })
-    # tok_landmarks = cities.document(u'TOK').collection(u'landmarks')
-    # tok_landmarks.document().set({
-    #     u'name': u'Ueno Park',
-    #     u'type': u'park'
-    # })
-    # tok_landmarks.document().set({
-    #     u'name': u'National Museum of Nature and Science',
-    #     u'type': u'museum'
-    # })
-    # bj_landmarks = cities.document(u'BJ').collection(u'landmarks')
-    # bj_landmarks.document().set({
-    #     u'name': u'Jingshan Park',
-    #     u'type': u'park'
-    # })
-    # bj_landmarks.document().set({
-    #     u'name': u'Beijing Ancient Observatory',
-    #     u'type': u'museum'
-    # })
-    # [END firestore_query_collection_group_dataset]
-    # [END fs_collection_group_query_data_setup]
+# sf_landmarks = cities.document(u'SF').collection(u'landmarks')
+# sf_landmarks.document().set({
+#     u'name': u'Golden Gate Bridge',
+#     u'type': u'bridge'
+# })
+# sf_landmarks.document().set({
+#     u'name': u'Legion of Honor',
+#     u'type': u'museum'
+# })
+# la_landmarks = cities.document(u'LA').collection(u'landmarks')
+# la_landmarks.document().set({
+#     u'name': u'Griffith Park',
+#     u'type': u'park'
+# })
+# la_landmarks.document().set({
+#     u'name': u'The Getty',
+#     u'type': u'museum'
+# })
+# dc_landmarks = cities.document(u'DC').collection(u'landmarks')
+# dc_landmarks.document().set({
+#     u'name': u'Lincoln Memorial',
+#     u'type': u'memorial'
+# })
+# dc_landmarks.document().set({
+#     u'name': u'National Air and Space Museum',
+#     u'type': u'museum'
+# })
+# tok_landmarks = cities.document(u'TOK').collection(u'landmarks')
+# tok_landmarks.document().set({
+#     u'name': u'Ueno Park',
+#     u'type': u'park'
+# })
+# tok_landmarks.document().set({
+#     u'name': u'National Museum of Nature and Science',
+#     u'type': u'museum'
+# })
+# bj_landmarks = cities.document(u'BJ').collection(u'landmarks')
+# bj_landmarks.document().set({
+#     u'name': u'Jingshan Park',
+#     u'type': u'park'
+# })
+# bj_landmarks.document().set({
+#     u'name': u'Beijing Ancient Observatory',
+#     u'type': u'museum'
+# })
+# [END firestore_query_collection_group_dataset]
+# [END fs_collection_group_query_data_setup]
 
-    # [START fs_collection_group_query]
-    # [START firestore_query_collection_group_filter_eq]
+# [START fs_collection_group_query]
+# [START firestore_query_collection_group_filter_eq]
 #     museums = db.collection_group(u'landmarks')\
 #         .where(u'type', u'==', u'museum')
 #     docs = museums.stream()
@@ -1109,8 +1112,6 @@ word_service.post_tweet("てすとしてるの！", "127.0.0.1")
 # print(key)
 # print(value)
 # doc_ref.set(value)
-
-
 
 
 # colection = db.collection("act_tags")

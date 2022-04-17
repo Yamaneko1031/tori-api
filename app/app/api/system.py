@@ -42,7 +42,6 @@ def reset_tweet_cnt():
     return system_service.reset_tweet_cnt()
 
 
-
 # from starlette.routing import Router
 # static_router = Router()
 # app.mount("/static", other_router)

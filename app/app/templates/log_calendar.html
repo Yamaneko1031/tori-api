@@ -1,0 +1,40 @@
+{% extends "base.html" %} {% block head %}
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css"
+  />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var calendarEl = document.getElementById("calendar");
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        themeSystem: "bootstrap5",
+        initialView: "dayGridMonth",
+        dateClick: function (info) {
+          console.log(info.date.getYear() + 1900);
+          console.log(info.date.getMonth() + 1);
+          console.log(info.date.getDate());
+          document.getElementById("form_day").value = info.date.getDate();
+          document.getElementById("form_month").value = info.date.getMonth() + 1;
+          document.getElementById("form_year").value = info.date.getYear() + 1900;
+          document.myform.submit();
+        }
+      });
+      calendar.render();
+    });
+  </script>
+{% endblock %}
+
+{% block nav_log %}
+active
+{% endblock %}
+
+{% block content %}
+  <form name="myform" action = /admin/log/teach method = "POST">
+    <input type="hidden" id= "form_day" name="day" value="">
+    <input type="hidden" id= "form_month" name="month" value="">
+    <input type="hidden" id= "form_year" name="year" value="">
+    <!-- <button id="btn">送信</button> -->
+  </form>
+  <div id="calendar"></div>
+{% endblock %}

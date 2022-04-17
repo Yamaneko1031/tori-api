@@ -21,13 +21,12 @@ def create_word(request: Request, word_create: models.WordCreate, session_id: Op
     """
     ret_data = word_service.create(word_create, session_id, request.client.host)                
                 
-    if "pre" in ret_data:
-        user_log_service.add_mean_update_log(word_create.word, word_create.mean, ret_data["pre"].mean, request.client.host, session_id, ret_data["tweet"]["stat"], ret_data["tweet"]["id"])
-    else:
-        user_log_service.add_teach_log(word_create.word, word_create.mean, request.client.host, session_id, ret_data["tweet"]["stat"], ret_data["tweet"]["id"])
-        
+       
     if not ret_data:
         raise HTTPException(status_code=404, detail="word already.")
+
+    user_log_service.add_teach_log(word_create.word, word_create.mean, request.client.host, session_id, ret_data)
+
     return ret_data
 
 

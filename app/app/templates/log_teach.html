@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block nav_log %}active{% endblock %}
+
+{% block content %}
+    <a href="/admin/log/calendar">カレンダー</a>
+
+    <!-- <form action = /admin/{{date.year}}/{{date.month}}/{{date.day}} method = "POST">
+        <button type = "submit" class="btn btn-primary" name = "action" value = 'previous_day'>＜＜前日</button>
+        <p>{{date.year}}/{{date.month}}/{{date.day}}</p>
+        <button type = "submit" class="btn btn-primary" name = "action" value = 'next_day'>翌日＞＞</button>
+    </form> -->
+<!-- 
+                    <td><button type="button" onclick="test({{ i }})">ボタン</button></td>
+    <button type="button" onclick="next_day()">ボタン</button>
+
+    <script>
+        function next_day(){
+            var dateObj = new Date(year,month-1,day)
+            dateObj.setDate( dateObj.getDate() + 1 );
+            window.location.href =
+            "admin/" +
+            (dateObj.getYear() + 1900) +
+            "/" +
+            (dateObj.getMonth() + 1) +
+            "/" +
+            dateObj.getDate();
+        }
+    </script> -->
+
+    {% set captions = ['種別', '単語', '意味', '意味(変更前)', '意味(現在)', '時間', 'ツイート', 'IP'] %}
+
+    {% for caption in captions %}
+    <div class="form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" onchange="myfunc(this.checked, '{{loop.index}}')" id="flexCheckChecked" checked>
+        <label class="form-check-label" for="flexCheckChecked">
+            {{ caption }}
+        </label>
+    </div>
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table table-hover table-sm" id="tabledata">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col"></th>
+                    {% for i in captions %}
+                    <th class="check-control-{{loop.index}}" scope="col">{{ i|e }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in data %}
+                {% set table_data = [item.action, item.word, item.mean, item.pre_mean, item.now_mean, item.created_at, item.tweet_state, item.ip_address] %}
+                <tr>
+                    <td>
+                        <form action = /admin/log/teach method = "POST">
+                            <input type="hidden" id= "form_day" name="day" value={{date.day}}>
+                            <input type="hidden" id= "form_month" name="month" value={{date.month}}>
+                            <input type="hidden" id= "form_year" name="year" value={{date.year}}>
+                            <input type="hidden" name="id" value={{item.id}}>
+                            <div class="dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                    menu
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li><button type = "submit" class="dropdown-item" name = "action" value = 'ip_watch'>同一IP</button></li>
+                                    {% if item.tweet_state == "tweet" %}
+                                        <li><button type = "submit" class="dropdown-item" name = "action" value = 'delete_tweet'>ツイート削除</button></li>
+                                    {% endif %}
+                                    <li><button type = "submit" class="dropdown-item" name = "action" value = 'ip_restriction'>IP制限</button></li>
+                                    <li><button type = "submit" class="dropdown-item" name = "action" value = 'delete_word'>単語削除</button></li>
+                                    <li><button type = "submit" class="dropdown-item" name = "action" value = 'update_mean'>意味編集</button></li>
+                                </ul>
+                            </div>
+                        </form>
+                    </td>
+                    {% for table_item in table_data %}
+                        <td class="text-break check-control-{{loop.index}}" style="max-width: 200px">{{ table_item }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <script>
+        function myfunc(value, index) {
+            var element = document.getElementById("tabledata");
+            var target_elements = element.getElementsByClassName("check-control-"+index);
+            for( var i = 0; i < target_elements.length; i++  ){
+                target_elements[i].style.display = value ? "" : "none"
+            }
+        }
+    </script>
+{% endblock %}
