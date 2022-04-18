@@ -1,6 +1,7 @@
 
 from google.cloud import firestore
-from datetime import datetime
+import google
+from datetime import date, datetime
 import time
 import re
 import random
@@ -27,14 +28,53 @@ word_service = services.word_instance
 tag_service = services.tag_instance
 
 
-a = models.WordCreate()
-a.word = "test"
-a.mean = "test2"
-a.kind = ""
-a.kind = ""
+# a = models.WordCreate()
+# a.word = "test"
+# a.mean = "test2"
+# a.kind = ""
+# a.kind = ""
 
-word_service.create(a, "a", "111")
+# word_service.create(a, "a", "111")
 
+
+# google.api_core.datetime_helpers.DatetimeWithNanoseconds
+# google.api_core.datetime_helpers.DatetimeWithNanoseconds
+
+# print(firestore.Timestamp.fromDate(date(datetimeStr))))
+
+# from google.api_core.datetime_helpers import DatetimeWithNanoseconds
+
+# word_list = word_service.get_word_list_next(10)
+# print(firestore.Timestamp.fromDate(date(word_list["next_key"])))
+
+# DatetimeWithNanoseconds(2020, 6, 22, 17, 1, 30, 12345)
+# a = google.api_core.datetime_helpers.DatetimeWithNanoseconds(2019, 2, 12, 3, 0, 11, 537650, tzinfo=<UTC>)
+# a = google.api_core.datetime_helpers.DatetimeWithNanoseconds(datetime.utcnow())
+# print(a)
+
+# for a in word_list["doc"]:
+#     print(a["word"])
+    
+# print(str(word_list["next_key"]))
+# b = datetime.fromisoformat(str(word_list["next_key"]))
+# key = DatetimeWithNanoseconds(b.year, b.month, b.day, b.hour, b.minute, b.second, b.microsecond)
+# word_list = word_service.get_word_list_next(key)
+# # word_list = word_service.get_word_list_next(word_list["next_key"])
+
+# for a in word_list["doc"]:
+#     print(a["word"])
+    
+# ret1 = word_service.get_word_list_next()
+
+# ret2 = word_service.get_word_list_next(ret1)
+
+# ret3 = word_service.get_word_list_next(ret2)
+
+# print("-------------")
+
+# ret1 = word_service.get_word_list_prev(ret1)
+
+# ret = word_service.get_word_list_prev(ret1)
 
 # aa = word_service.test_tweet("テストしてるの！")
 # print(aa)
@@ -42,9 +82,9 @@ word_service.create(a, "a", "111")
 # aa = word_service.delete_tweet(1515157446234279937)
 # print(aa)
 
-a = word_service.ng_text_check("#fary5")
-# a = word_service.ng_ip_check("221.243.197.154")
-print(a)
+# a = word_service.ng_text_check("#fary5")
+# # a = word_service.ng_ip_check("221.243.197.154")
+# print(a)
 
 # word_service.post_tweet("てすとしてるの！", "127.0.0.1")
 
@@ -53,8 +93,14 @@ print(a)
 # print( word_service.ng_text_check(text) )
 
 # kana = jaconv.kata2hira(text)
-# if re.match(r'.*た.*く.*ち.*', kana):
-#     print(kana)
+
+text = "@hasewo0706如月オルト疑惑住所〒475-0905愛知県半田市岩滑東2-79"
+
+print(re.sub(r'\D', '', text))
+print(len(re.sub(r'\D', '', text)))
+
+if re.match(r'.*県.*市.*町.*', text):
+    print(text)
 
 # print("test")
 

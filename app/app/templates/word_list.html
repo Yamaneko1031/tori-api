@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block head %}{% endblock %}
+{% block nav_word_list %} active {% endblock %}
+
+{% block content %}
+
+<p>{{data.next_key}}</p>
+
+<form action = /admin/word_list method = "POST" enctype="multipart/form-data">
+    <input type="hidden" name="next_key" value="{{data.next_key}}">
+    <button type="submit" class="btn btn-primary" name="action" value='next'>次</button>
+</form>
+
+{% for item in data.doc %}
+<p>{{item.word}}</p>
+{% endfor %}
+
+{% endblock %}

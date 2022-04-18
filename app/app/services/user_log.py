@@ -58,11 +58,11 @@ class UserLogService:
             data["id"] = doc.id
             if "word_ref" in data:
                 word_doc = data["word_ref"].get()
-                if word_doc:
+                if word_doc.exists:
                     word_data = word_doc.to_dict()
                     data["now_mean"] = word_data["mean"]
                 else:
-                    data["now_mean"] = ""
+                    data["now_mean"] = "(削除済み)"
 
             teach_list.append(data)
 

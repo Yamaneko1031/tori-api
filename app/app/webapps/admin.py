@@ -1,3 +1,5 @@
+from datetime import date, datetime
+from google.api_core.datetime_helpers import DatetimeWithNanoseconds
 import re
 from app.services.system import SystemService
 from fastapi import APIRouter
@@ -24,20 +26,6 @@ router = APIRouter(include_in_schema=False)
 @router.get("/admin/log/calendar")
 def admin(request: Request):
     return templates.TemplateResponse("log_calendar.html", {"request": request})
-
-# @router.get("/admin/log/teach")
-# def admin(request: Request):
-#     ret_word = word_service.get_one_day_learn_words(year, month, day)
-#     ret_teach_logs = user_log_service.get_teach_logs(year, month, day)
-#     # s = word["word"]
-#     # m = re.match(r'([a-z]+)@([a-z]+)\.com', s)
-#     # jaconv.kata2hira(word1)
-#     # print(request.client.host)
-#     # for word in ret_word:
-#     #     if re.match(r'.*た.*く.*っ.*ち.*', word['word']):
-#     #         print(word["word"])
-#     date = {"year": year,"month": month,"day": day}
-#     return templates.TemplateResponse("log_teach.html", {"request": request, "data": ret_teach_logs, "date": date})
 
 
 @router.post("/admin/log/teach")
@@ -67,7 +55,7 @@ async def admin(request: Request):
             system_service.add_ng_ip(log_data["ip_address"])
             word_service.renew_ng_list()
         elif result._dict["action"] == "delete_word":
-            print("delete_word")
+            word_service.delete_from_ref(log_data["word_ref"])
         elif result._dict["action"] == "update_mean":
             print("update_mean")
         else:
@@ -78,6 +66,17 @@ async def admin(request: Request):
     return templates.TemplateResponse("log_teach.html", {"request": request, "data": ret_teach_logs, "date": date, "result": result})
 
 
-@router.get("/admin/search/word/{word}")
-def admin(request: Request, word: str):
-    return templates.TemplateResponse("learn_word.html", {"request": request, "data": ret_teach_logs})
+@router.post("/admin/word_list")
+@router.get("/admin/word_list")
+async def admin_word_list(request: Request):
+    print("admin_word_list")
+    result = await request.form()
+    next_key = None
+    if "next_key" in result._dict:
+        print(result._dict["next_key"])
+        date_time = datetime.fromisoformat(str(result._dict["next_key"]))
+        next_key = DatetimeWithNanoseconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.minute, date_time.second, date_time.microsecond)
+
+    word_list = word_service.get_word_list_next(30, next_key)
+
+    return templates.TemplateResponse("word_List.html", {"request": request, "data": word_list})

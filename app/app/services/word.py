@@ -5,6 +5,7 @@ from uuid import uuid4
 from datetime import datetime
 from typing import List
 import re
+from xmlrpc.client import DateTime
 import jaconv
 
 import tweepy
@@ -90,13 +91,11 @@ class WordService:
         """
         # NGリスト取得
         self.renew_ng_list()
-        
-        
+
     def renew_ng_list(self):
         self.ng_list = system_service.get_ng_list()
         self.ng_regex = system_service.get_ng_regex()
         self.ng_ip = system_service.get_ng_ip()
-        
 
     def create(self, word_create: models.WordCreate, taught: str, ip_address: str) -> models.WordAll:
         """ 新規単語の追加
@@ -144,6 +143,12 @@ class WordService:
             doc._reference.delete()
         return
 
+    def delete_from_ref(self, word_ref):
+        """ 単語情報削除
+        """
+        word_ref.delete()
+        return
+
     def get(self, word: str) -> models.WordAll:
         """ 単語情報取得
         """
@@ -152,6 +157,63 @@ class WordService:
         if docs:
             return models.WordAll(**docs[0].to_dict())
         return
+
+    def get_word_list_next(self, limit: int, next_key=None):
+        """ 更新された
+        google.api_core.datetime_helpers.DatetimeWithNanoseconds
+        """
+
+        doc_dict_list = []
+
+        if next_key:
+            # print(firestore.Timestamp.fromDate(DateTime(next_key)))
+            
+            docs = db.collection(self.collection_name).order_by(
+                u'updated_at', direction=firestore.Query.DESCENDING).start_after({u'updated_at': next_key}).limit(limit).stream()
+
+            for doc in docs:
+                doc_dict_list.append(doc.to_dict())
+
+        else:
+            docs = db.collection(self.collection_name).order_by(
+                u'updated_at', direction=firestore.Query.DESCENDING).limit(limit).stream()
+
+            for doc in docs:
+                doc_dict_list.append(doc.to_dict())
+
+        # for doc_dict in doc_dict_list:
+        #     print(doc_dict["word"])
+            
+        print(doc_dict_list[-1]['updated_at'])
+        ret = {"doc": doc_dict_list, "next_key": doc_dict_list[-1]['updated_at']}
+
+        return ret
+
+    # def get_word_list_prev(self, end_key=None):
+    #     """ 更新された
+    #     google.api_core.datetime_helpers.DatetimeWithNanoseconds
+    #     """
+
+    #     doc_dict_list = []
+
+    #     if end_key:
+    #         docs = db.collection(self.collection_name).order_by(
+    #             u'updated_at', direction=firestore.Query.DESCENDING).end_before({u'updated_at': end_key}).limit_to_last(5).get()
+
+    #         for doc in docs:
+    #             doc_dict_list.append(doc.to_dict())
+
+    #     else:
+    #         docs = db.collection(self.collection_name).order_by(
+    #             u'updated_at', direction=firestore.Query.DESCENDING).limit_to_last(5).stream()
+
+    #         for doc in docs:
+    #             doc_dict_list.append(doc.to_dict())
+
+    #     for doc_dict in doc_dict_list:
+    #         print(doc_dict["word"])
+
+    #     return doc_dict_list[0]['updated_at']
 
     def get_common_tag_word(self, word: str, tag: str) -> models.WordAll:
         """ 共通タグの単語情報取得
@@ -581,7 +643,9 @@ class WordService:
         check_text = ''.join(text.split())
         check_text = check_text.lower()
         check_text = jaconv.kata2hira(check_text)
-
+        # 7文字以上の数字はNG        
+        if re.sub(r'\D', '', text) >= 7:
+            return True
         # 正規表現のチェック
         for ng_regex in self.ng_regex:
             if re.match(ng_regex, check_text):
