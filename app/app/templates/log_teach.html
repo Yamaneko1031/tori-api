@@ -3,37 +3,15 @@
 {% block nav_log %}active{% endblock %}
 
 {% block content %}
-    <a href="/admin/log/calendar">カレンダー</a>
 
-    <!-- <form action = /admin/{{date.year}}/{{date.month}}/{{date.day}} method = "POST">
-        <button type = "submit" class="btn btn-primary" name = "action" value = 'previous_day'>＜＜前日</button>
-        <p>{{date.year}}/{{date.month}}/{{date.day}}</p>
-        <button type = "submit" class="btn btn-primary" name = "action" value = 'next_day'>翌日＞＞</button>
-    </form> -->
-<!-- 
-                    <td><button type="button" onclick="test({{ i }})">ボタン</button></td>
-    <button type="button" onclick="next_day()">ボタン</button>
-
-    <script>
-        function next_day(){
-            var dateObj = new Date(year,month-1,day)
-            dateObj.setDate( dateObj.getDate() + 1 );
-            window.location.href =
-            "admin/" +
-            (dateObj.getYear() + 1900) +
-            "/" +
-            (dateObj.getMonth() + 1) +
-            "/" +
-            dateObj.getDate();
-        }
-    </script> -->
+    <div href="/admin/log/calendar">カレンダー</div>
 
     {% set captions = ['種別', '単語', '意味', '意味(変更前)', '意味(現在)', '時間', 'ツイート', 'IP'] %}
 
     {% for caption in captions %}
     <div class="form-check-inline">
-        <input class="form-check-input" type="checkbox" value="" onchange="myfunc(this.checked, '{{loop.index}}')" id="flexCheckChecked" checked>
-        <label class="form-check-label" for="flexCheckChecked">
+        <label class="form-check-label" for="flexCheckChecked{{loop.index}}">
+            <input class="form-check-input" type="checkbox" value="" onchange="myfunc(this.checked, '{{loop.index}}')" id="flexCheckChecked{{loop.index}}" checked>
             {{ caption }}
         </label>
     </div>
@@ -59,6 +37,26 @@
                             <input type="hidden" id= "form_month" name="month" value={{date.month}}>
                             <input type="hidden" id= "form_year" name="year" value={{date.year}}>
                             <input type="hidden" name="id" value={{item.id}}>
+
+                            <div class="modal fade" id="MeanEditModal{{loop.index}}" tabindex="-1" aria-labelledby="MeanEditModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="MeanEditModalLabel">意味を入力してください</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <label for="message-text" class="col-form-label">{{item.word}}:</label>
+                                            <textarea class="form-control" id="message-text" name="mean"></textarea>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                                            <button type="submit" class="btn btn-primary" name="action" value='update_mean' data-bs-dismiss="modal">確定</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="dropdown">
                                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                                     menu
@@ -68,9 +66,9 @@
                                     {% if item.tweet_state == "tweet" %}
                                         <li><button type = "submit" class="dropdown-item" name = "action" value = 'delete_tweet'>ツイート削除</button></li>
                                     {% endif %}
-                                    <li><button type = "submit" class="dropdown-item" name = "action" value = 'ip_restriction'>IP制限</button></li>
-                                    <li><button type = "submit" class="dropdown-item" name = "action" value = 'delete_word'>単語削除</button></li>
-                                    <li><button type = "submit" class="dropdown-item" name = "action" value = 'update_mean'>意味編集</button></li>
+                                    <li><button type="submit" class="dropdown-item" name="action" value='ip_restriction'>IP制限</button></li>
+                                    <li><button type="submit" class="dropdown-item" name="action" value='delete_word'>単語削除</button></li>
+                                    <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#MeanEditModal{{loop.index}}">意味編集</button></li>
                                 </ul>
                             </div>
                         </form>
@@ -83,7 +81,7 @@
             </tbody>
         </table>
     </div>
-    
+
     <script>
         function myfunc(value, index) {
             var element = document.getElementById("tabledata");

@@ -185,7 +185,7 @@ class WordService:
         #     print(doc_dict["word"])
             
         print(doc_dict_list[-1]['updated_at'])
-        ret = {"doc": doc_dict_list, "next_key": doc_dict_list[-1]['updated_at']}
+        ret = {"doc": doc_dict_list, "next_key": doc_dict_list[-1]['updated_at'], "now_key": next_key}
 
         return ret
 
@@ -479,6 +479,45 @@ class WordService:
 
         return False
 
+    def update_tags(self, word: str, tags_cnt: dict):
+        """ タグ追加
+        """
+        tags = []
+        like = 0
+        
+        # print(tags_cnt)
+        # return
+        
+        for key in tags_cnt:
+            tag_data = tag_service.get_tag(key)
+
+            if tag_data:
+                tags.append(tag_data["text"])
+                like = like + tag_data["pnt"]
+        
+        docs = db.collection(self.collection_name).where(
+            "word", "==", word).limit(1).get()
+
+        if docs:
+            set_data = {
+                "tags": firestore.DELETE_FIELD,
+                "tags_cnt": firestore.DELETE_FIELD,
+            }
+            docs[0]._reference.update(set_data)
+            set_data = {
+                "tags": tags,
+                "tags_cnt": tags_cnt,
+                "updated_at": datetime.utcnow(),
+                "cnt": firestore.Increment(1),
+                "like": like,
+            }
+            docs[0]._reference.set(set_data, merge=True)
+            return True
+        else:
+            print("失敗")
+
+        return False
+    
     def add_tag_for_text(self, word: str, text: str):
         """ 文章内からタグ追加
             タグ一覧を返す
