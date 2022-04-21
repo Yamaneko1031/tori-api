@@ -27,6 +27,9 @@ def create_word(request: Request, word_create: models.WordCreate, session_id: Op
 
     user_log_service.add_teach_log(
         word_create.word, word_create.mean, request.client.host, session_id, ret_data)
+    
+    # create_refのデータ形式がjsonに変換出来なかったので一旦消して返しておく
+    ret_data["create_ref"] = ""
 
     return ret_data
 
