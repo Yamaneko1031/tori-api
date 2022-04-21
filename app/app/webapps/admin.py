@@ -25,6 +25,7 @@ templates = Jinja2Templates(directory="app/templates")
 router = APIRouter(include_in_schema=False)
 
 
+@router.get("/admin")
 @router.get("/admin/log/calendar")
 def admin(request: Request):
     return templates.TemplateResponse("log_calendar.html", {"request": request})
@@ -93,9 +94,10 @@ async def admin_word_list(request: Request):
                 word_service.update_tags(result._dict["word"], tags_cnt_dict)
 
     if "next_key" in result._dict:
-        print(result._dict["next_key"])
-        date_time = datetime.fromisoformat(str(result._dict["next_key"]))
-        next_key = DatetimeWithNanoseconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.minute, date_time.second, date_time.microsecond)
+        if result._dict["next_key"] != 'None':
+            print(result._dict["next_key"])
+            date_time = datetime.fromisoformat(str(result._dict["next_key"]))
+            next_key = DatetimeWithNanoseconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.minute, date_time.second, date_time.microsecond)
                 
     word_list = word_service.get_word_list_next(50, next_key)
 
