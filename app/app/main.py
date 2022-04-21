@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from app.api import user, word, system, tag
-from app.webapps import admin
+# from app.webapps import admin
 
 
 def configure(app):
@@ -27,7 +27,7 @@ def include_router(app):
     app.include_router(tag.router)
     app.include_router(user.router)
     app.include_router(word.router)
-    app.include_router(admin.router)
+    # app.include_router(admin.router)
 
 def start_application():
     app = FastAPI()
