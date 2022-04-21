@@ -14,16 +14,14 @@ from fastapi.templating import Jinja2Templates
 
 from app import models, services
 
-router = APIRouter()
+# router = APIRouter()
+templates = Jinja2Templates(directory="app/templates")
+router = APIRouter(include_in_schema=False)
 
 tag_service = services.tag_instance
 word_service = services.word_instance
 user_log_service = services.user_log_instance
 system_service = services.system_instance
-
-templates = Jinja2Templates(directory="app/templates")
-router = APIRouter(include_in_schema=False)
-
 
 @router.get("/admin")
 @router.get("/admin/log/calendar")
