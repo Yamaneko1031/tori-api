@@ -683,7 +683,7 @@ class WordService:
         check_text = check_text.lower()
         check_text = jaconv.kata2hira(check_text)
         # 7文字以上の数字はNG        
-        if re.sub(r'\D', '', text) >= 7:
+        if len(re.sub(r'\D', '', text)) >= 7:
             return True
         # 正規表現のチェック
         for ng_regex in self.ng_regex:
