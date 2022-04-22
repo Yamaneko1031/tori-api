@@ -91,12 +91,14 @@ async def admin_word_list(request: Request):
                 tags_cnt_dict = json.loads(result._dict["tags_cnt"].replace("'", '"'))
                 word_service.update_tags(result._dict["word"], tags_cnt_dict)
 
-    if "next_key" in result._dict:
-        if result._dict["next_key"] != 'None':
-            print(result._dict["next_key"])
-            date_time = datetime.fromisoformat(str(result._dict["next_key"]))
-            next_key = DatetimeWithNanoseconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.minute, date_time.second, date_time.microsecond)
+        if "next_key" in result._dict:
+            if result._dict["next_key"] != 'None':
+                print(result._dict["next_key"])
+                date_time = datetime.fromisoformat(str(result._dict["next_key"]))
+                next_key = DatetimeWithNanoseconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.minute, date_time.second, date_time.microsecond)
                 
-    word_list = word_service.get_word_list_next(50, next_key)
+    word_list = word_service.get_word_list_next(3, next_key)
+    
+    print(word_list)
 
     return templates.TemplateResponse("word_List.html", {"request": request, "data": word_list})

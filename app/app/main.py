@@ -39,3 +39,5 @@ def start_application():
 
 
 app = start_application()
+
+# uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
