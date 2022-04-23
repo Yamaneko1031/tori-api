@@ -67,38 +67,44 @@ async def admin(request: Request):
     return templates.TemplateResponse("log_teach.html", {"request": request, "data": ret_teach_logs, "date": date, "result": result})
 
 
-@router.post("/admin/word_list")
 @router.get("/admin/word_list")
+def admin_word_list(request: Request):
+    next_key = None
+    word_list = word_service.get_word_list_next(3, next_key)    
+    return templates.TemplateResponse("word_List.html", {"request": request, "data": word_list})
+
+
+@router.post("/admin/word_list")
 async def admin_word_list(request: Request):
     print("admin_word_list")
-    # result = await request.form()
-    # # print(result._dict)
+    result = await request.form()
+    # print(result._dict)
     
-    # next_key = None
-    # if "action" in result._dict:
-    #     if result._dict["action"] == "next":
-    #         pass
+    next_key = None
+    if "action" in result._dict:
+        if result._dict["action"] == "next":
+            pass
         
-    #     if "word" in result:
-    #         if result._dict["action"] == "delete_word":
-    #             word_service.delete(result._dict["word"])
-    #         elif result._dict["action"] == "mean_init":
-    #             word_service.update_mean(result._dict["word"], result._dict["word"], "admin")
-    #         elif result._dict["action"] == "update_mean":
-    #             if result._dict["mean"]:
-    #                 word_service.update_mean(result._dict["word"], result._dict["mean"], "admin")
-    #         elif result._dict["action"] == "update_tag":
-    #             tags_cnt_dict = json.loads(result._dict["tags_cnt"].replace("'", '"'))
-    #             word_service.update_tags(result._dict["word"], tags_cnt_dict)
+        if "word" in result:
+            if result._dict["action"] == "delete_word":
+                word_service.delete(result._dict["word"])
+            elif result._dict["action"] == "mean_init":
+                word_service.update_mean(result._dict["word"], result._dict["word"], "admin")
+            elif result._dict["action"] == "update_mean":
+                if result._dict["mean"]:
+                    word_service.update_mean(result._dict["word"], result._dict["mean"], "admin")
+            elif result._dict["action"] == "update_tag":
+                tags_cnt_dict = json.loads(result._dict["tags_cnt"].replace("'", '"'))
+                word_service.update_tags(result._dict["word"], tags_cnt_dict)
 
-    #     if "next_key" in result._dict:
-    #         if result._dict["next_key"] != 'None':
-    #             print(result._dict["next_key"])
-    #             date_time = datetime.fromisoformat(str(result._dict["next_key"]))
-    #             next_key = DatetimeWithNanoseconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.minute, date_time.second, date_time.microsecond)
+        if "next_key" in result._dict:
+            if result._dict["next_key"] != 'None':
+                print(result._dict["next_key"])
+                date_time = datetime.fromisoformat(str(result._dict["next_key"]))
+                next_key = DatetimeWithNanoseconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.minute, date_time.second, date_time.microsecond)
                 
-    # word_list = word_service.get_word_list_next(3, next_key)
-    word_list = "てすととと"
+    word_list = word_service.get_word_list_next(3, next_key)
+    # word_list = "てすととと"
     
     print(word_list)
 
