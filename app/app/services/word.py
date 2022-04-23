@@ -101,6 +101,8 @@ class WordService:
     def create(self, word_create: models.WordCreate, taught: str, ip_address: str) -> models.WordAll:
         """ 新規単語の追加
         """
+        self.renew_ng_list()
+        
         retData = self.get_knowns_list(
             mean=word_create.mean, teach_word=word_create.word, secret_tag=word_create.secret_tag)
 
