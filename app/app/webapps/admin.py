@@ -76,6 +76,7 @@ def admin(request: Request):
 def word_list(request: Request):
     # next_key = None
     # word_list = word_service.get_word_list_next(3, next_key)    
+    return templates.TemplateResponse("log_calendar.html", {"request": request})
     return templates.TemplateResponse("word_List.html", {"request": request, "data": "テスト"})
     # return templates.TemplateResponse("word_List.html", {"request": request, "data": word_list})
 
