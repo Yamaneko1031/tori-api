@@ -72,7 +72,7 @@ async def admin(request: Request):
 async def admin_word_list(request: Request):
     print("admin_word_list")
     result = await request.form()
-    print(result._dict)
+    # print(result._dict)
     
     next_key = None
     if "action" in result._dict:
