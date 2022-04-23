@@ -97,7 +97,8 @@ async def admin_word_list(request: Request):
                 date_time = datetime.fromisoformat(str(result._dict["next_key"]))
                 next_key = DatetimeWithNanoseconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.minute, date_time.second, date_time.microsecond)
                 
-    word_list = word_service.get_word_list_next(3, next_key)
+    # word_list = word_service.get_word_list_next(3, next_key)
+    word_list = "てすととと"
     
     print(word_list)
 
