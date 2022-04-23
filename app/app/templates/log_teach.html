@@ -8,7 +8,7 @@
         <a href="/admin/log/calendar">カレンダー</a>
     </div>
 
-    {% set captions = ['種別', '単語', '意味', '意味(変更前)', '意味(現在)', '時間', 'ツイート', 'IP'] %}
+    {% set captions = ['種別', '単語', '意味', '意味(変更前)', '意味(現在)', '時間', 'ツイート', 'IP', 'session'] %}
 
     {% for caption in captions %}
     <div class="form-check-inline">
@@ -31,7 +31,7 @@
             </thead>
             <tbody>
                 {% for item in data %}
-                {% set table_data = [item.action, item.word, item.mean, item.pre_mean, item.now_mean, item.created_at, item.tweet_state, item.ip_address] %}
+                {% set table_data = [item.action, item.word, item.mean, item.pre_mean, item.now_mean, item.created_at, item.tweet_state, item.ip_address, item.session_id] %}
                 <tr>
                     <td>
                         <form action = /admin/log/teach method = "POST">
@@ -69,6 +69,7 @@
                                         <li><button type = "submit" class="dropdown-item" name = "action" value = 'delete_tweet'>ツイート削除</button></li>
                                     {% endif %}
                                     <li><button type="submit" class="dropdown-item" name="action" value='ip_restriction'>IP制限</button></li>
+                                    <li><button type="submit" class="dropdown-item" name="action" value='session_restriction'>session制限</button></li>
                                     <li><button type="submit" class="dropdown-item" name="action" value='delete_word'>単語削除</button></li>
                                     <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#MeanEditModal{{loop.index}}">意味編集</button></li>
                                 </ul>

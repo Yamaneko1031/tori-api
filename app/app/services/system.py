@@ -118,6 +118,16 @@ class SystemService:
         doc = db.collection(self.collection_name).document("NG_LIST").get()
         return doc.to_dict()["ip"]
     
+    def add_ng_session(self, session_id):
+        doc_ref = db.collection(self.collection_name).document("NG_LIST")
+        doc_ref.set({
+            "session_id": firestore.ArrayUnion([session_id])
+        }, merge=True)
+        
+    def get_ng_session(self):
+        doc = db.collection(self.collection_name).document("NG_LIST").get()
+        return doc.to_dict()["session_id"]
+    
     def add_janken_result(self, result, session_id):
         if result == 0:
             set_result = "win_cnt"

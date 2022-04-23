@@ -55,6 +55,9 @@ async def admin(request: Request):
         elif result._dict["action"] == "ip_restriction":
             system_service.add_ng_ip(log_data["ip_address"])
             word_service.renew_ng_list()
+        elif result._dict["action"] == "session_restriction":
+            system_service.add_ng_session(log_data["session_id"])
+            word_service.renew_ng_list()
         elif result._dict["action"] == "delete_word":
             word_service.delete_from_ref(log_data["word_ref"])
         elif result._dict["action"] == "update_mean":
@@ -69,9 +72,9 @@ async def admin(request: Request):
 
 @router.get("/admin/word_list")
 def word_list(request: Request):
-    next_key = None
-    word_list = word_service.get_word_list_next(3, next_key)    
-    return templates.TemplateResponse("log_calendar.html", {"request": request})
+    # next_key = None
+    # word_list = word_service.get_word_list_next(3, next_key)    
+    return templates.TemplateResponse("word_List.html", {"request": request})
     return templates.TemplateResponse("word_List.html", {"request": request, "data": "テスト"})
     # return templates.TemplateResponse("word_List.html", {"request": request, "data": word_list})
 

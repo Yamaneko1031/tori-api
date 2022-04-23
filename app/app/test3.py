@@ -28,6 +28,13 @@ word_service = services.word_instance
 tag_service = services.tag_instance
 
 
+# print("sss")
+
+docs = db.collection("words").where(
+    "word", "==", "むーちゃん").limit(1).get()
+
+print(docs[0].to_dict())
+            
 # a = models.WordCreate()
 # a.word = "test"
 # a.mean = "test2"
@@ -94,13 +101,13 @@ tag_service = services.tag_instance
 
 # kana = jaconv.kata2hira(text)
 
-text = "@hasewo0706如月オルト疑惑住所〒475-0905愛知県半田市岩滑東2-79"
+# text = "@hasewo0706如月オルト疑惑住所〒475-0905愛知県半田市岩滑東2-79"
 
-print(re.sub(r'\D', '', text))
-print(len(re.sub(r'\D', '', text)))
+# print(re.sub(r'\D', '', text))
+# print(len(re.sub(r'\D', '', text)))
 
-if re.match(r'.*県.*市.*町.*', text):
-    print(text)
+# if re.match(r'.*県.*市.*町.*', text):
+#     print(text)
 
 # print("test")
 
