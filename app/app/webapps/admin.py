@@ -70,13 +70,13 @@ async def admin(request: Request):
     return templates.TemplateResponse("log_teach.html", {"request": request, "data": ret_teach_logs, "date": date, "result": result})
 
 
-@router.get("/admin/word_list")
-def word_list(request: Request):
-    # next_key = None
-    # word_list = word_service.get_word_list_next(3, next_key)    
-    return templates.TemplateResponse("word_List.html", {"request": request})
-    return templates.TemplateResponse("word_List.html", {"request": request, "data": "テスト"})
-    # return templates.TemplateResponse("word_List.html", {"request": request, "data": word_list})
+# @router.get("/admin/word_list")
+# def word_list(request: Request):
+#     # next_key = None
+#     # word_list = word_service.get_word_list_next(3, next_key)    
+#     return templates.TemplateResponse("word_List.html", {"request": request})
+#     return templates.TemplateResponse("word_List.html", {"request": request, "data": "テスト"})
+#     # return templates.TemplateResponse("word_List.html", {"request": request, "data": word_list})
 
 
 @router.post("/admin/word_list")
@@ -114,3 +114,13 @@ async def admin_word_list(request: Request):
     print(word_list)
 
     return templates.TemplateResponse("word_List.html", {"request": request, "data": word_list})
+
+
+@router.get("/admin/word_list")
+def admin(request: Request):
+    return templates.TemplateResponse("word_list.html", {"request": request})
+
+
+@router.get("/admin/ng_word")
+def admin(request: Request):
+    return templates.TemplateResponse("ng_word.html", {"request": request})
