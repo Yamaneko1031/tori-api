@@ -23,4 +23,4 @@ class TeachLogCreate(BaseTeachLog):
 
 
 class TeachLogAll(BaseTeachLog):
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now)

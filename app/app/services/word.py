@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import logging
@@ -11,6 +12,7 @@ import jaconv
 import tweepy
 from google.cloud.firestore_v1.transaction import Transaction
 from google.cloud import firestore
+from google.api_core.datetime_helpers import DatetimeWithNanoseconds
 from pykakasi import kakasi
 
 from app.util import morpheme
@@ -32,6 +34,18 @@ tweet_api = tweepy.API(auth)
 
 tag_service = services.tag_instance
 system_service = services.system_instance
+
+
+# date, datetimeの変換関数
+def json_serial(obj):
+    # 日付型の場合には、文字列に変換します
+    if isinstance(obj, (datetime)):
+        return obj.isoformat()
+    if isinstance(obj, (DatetimeWithNanoseconds)):
+        return ""
+    
+    # 上記以外はサポート対象外.
+    raise TypeError ("Type %s not serializable" % type(obj))
 
 
 @firestore.transactional
@@ -183,12 +197,19 @@ class WordService:
 
             for doc in docs:
                 doc_dict_list.append(doc.to_dict())
+        
+        next = doc_dict_list[-1]['updated_at']
+        
+        for word_data in doc_dict_list:
+            for key, value in word_data.items():
+                if isinstance(value, (DatetimeWithNanoseconds)):
+                    print(value)
+                    word_data[key] = ""
 
-        # for doc_dict in doc_dict_list:
-        #     print(doc_dict["word"])
-            
-        print(doc_dict_list[-1]['updated_at'])
-        ret = {"doc": doc_dict_list, "next_key": doc_dict_list[-1]['updated_at'], "now_key": next_key}
+        # doc_dict_list = json.dumps(doc_dict_list, default=json_serial)
+        # print(doc_dict_list)  
+        # print(doc_dict_list[-1]['updated_at'])
+        ret = {"doc": doc_dict_list, "next_key": next, "now_key": next_key}
 
         return ret
 
@@ -415,8 +436,9 @@ class WordService:
                 docs[0]._reference.set({
                     "mean": mean,
                     "taught": taught,
-                    "updated_at": datetime.utcnow(),
+                    "updated_at": datetime.now(),
                     "cnt": firestore.Increment(1),
+                    "kind": "",
                 }, merge=True)
                 return True
         return False
@@ -429,7 +451,7 @@ class WordService:
         if docs:
             docs[0]._reference.set({
                 "kind": kind,
-                "updated_at": datetime.utcnow(),
+                "updated_at": datetime.now(),
                 "cnt": firestore.Increment(1),
             }, merge=True)
             return True
@@ -443,7 +465,7 @@ class WordService:
         if docs:
             docs[0]._reference.set({
                 "good": firestore.Increment(1),
-                "updated_at": datetime.utcnow(),
+                "updated_at": datetime.now(),
                 "cnt": firestore.Increment(1),
             }, merge=True)
             return True
@@ -457,7 +479,7 @@ class WordService:
         if docs:
             docs[0]._reference.set({
                 "bad": firestore.Increment(1),
-                "updated_at": datetime.utcnow(),
+                "updated_at": datetime.now(),
                 "cnt": firestore.Increment(1),
             }, merge=True)
             return True
@@ -477,7 +499,7 @@ class WordService:
                     "tags_cnt": {
                         tag_data["text"]: firestore.Increment(1)
                     },
-                    "updated_at": datetime.utcnow(),
+                    "updated_at": datetime.now(),
                     "cnt": firestore.Increment(1),
                 }
                 # 初めてのタグはlikeに計算
@@ -517,7 +539,7 @@ class WordService:
             set_data = {
                 "tags": tags,
                 "tags_cnt": tags_cnt,
-                "updated_at": datetime.utcnow(),
+                "updated_at": datetime.now(),
                 "cnt": firestore.Increment(1),
                 "like": like,
             }
@@ -547,7 +569,7 @@ class WordService:
             session_id = str(uuid4())
             doc_ref = sessions.document(document_id=session_id)
             data = {}
-            data["created_at"] = datetime.utcnow()
+            data["created_at"] = datetime.now()
             doc_ref.set(data)
             system_service.add_session()
 
@@ -557,7 +579,7 @@ class WordService:
         LIMIT_CNT = 60
         tweet_cnt = system_service.get_tweet_cnt()
         if tweet_cnt <= LIMIT_CNT:
-            dt_now = datetime.utcnow()
+            dt_now = datetime.now()
             system_service.add_tweet_cnt()
             if tweet_cnt == LIMIT_CNT:
                 nokori = 60 - dt_now.minute
@@ -589,7 +611,7 @@ class WordService:
                 ret["state"] = "tweet"
                 ret["id"] = status.id
                 if tweet_cnt == LIMIT_CNT:
-                    dt_now = datetime.utcnow()
+                    dt_now = datetime.now()
                     nokori = 60 - dt_now.minute
                     if 0 < nokori:
                         tweet_api.update_status(
@@ -733,7 +755,6 @@ class WordService:
         """
         word_data = word_ref.get().to_dict()
         msg = ""
-        kind = ""
         data = {}
         # ツイート内容生成
         msg = ("「{}」の意味を勘違いしてたの！\n"
@@ -741,13 +762,14 @@ class WordService:
 
         ret = self.post_tweet(msg, session_id, ip_address)
         if ret["state"] == "ng_session" or ret["state"] == "ng_ip" or ret["state"] == "ng_text":
-            kind = "NG"
+            data["kind"] = "NG"
+            word_ref.update(data)
             
         if ret["state"] == "tweet":
             # ツイートしたワードの情報更新
-            data["tweeted_at"] = datetime.utcnow()
-            data["updated_at"] = datetime.utcnow()
-            data["kind"] = kind
+            data["tweeted_at"] = datetime.now()
+            data["updated_at"] = datetime.now()
+            data["kind"] = ""
             word_ref.update(data)
 
         return ret
@@ -757,7 +779,6 @@ class WordService:
         """
         word_data = word_ref.get().to_dict()
         msg = ""
-        kind = ""
         data = {}
         # ツイート内容生成
         msg = ("今「{}」って言葉を教えてもらったの！\n"
@@ -776,13 +797,14 @@ class WordService:
         # ツイート
         ret = self.post_tweet(msg, session_id, ip_address)
         if ret["state"] == "ng_session" or ret["state"] == "ng_ip" or ret["state"] == "ng_text":
-            kind = "NG"
+            data["kind"] = "NG"
+            word_ref.update(data)
             
         if ret["state"] == "tweet":
             # ツイートしたワードの情報更新
-            data["tweeted_at"] = datetime.utcnow()
-            data["updated_at"] = datetime.utcnow()
-            data["kind"] = kind
+            data["tweeted_at"] = datetime.now()
+            data["updated_at"] = datetime.now()
+            data["kind"] = ""
             word_ref.update(data)
 
         return ret
@@ -810,8 +832,8 @@ class WordService:
                    "「{}」のことだよ！").format(doc_dict["word"], doc_dict["mean"])
             # ツイートしたワードの情報更新
             data = {}
-            data["tweeted_at"] = datetime.utcnow()
-            data["updated_at"] = datetime.utcnow()
+            data["tweeted_at"] = datetime.now()
+            data["updated_at"] = datetime.now()
             doc._reference.update(data)
             # ツイート
             self.post_tweet(msg)
@@ -892,8 +914,8 @@ class WordService:
                "「{}」のことだよ！").format(doc_dict["word"], doc_dict["mean"])
         # ツイートしたワードの情報更新
         data = {}
-        data["tweeted_at"] = datetime.utcnow()
-        data["updated_at"] = datetime.utcnow()
+        data["tweeted_at"] = datetime.now()
+        data["updated_at"] = datetime.now()
         ref.update(data)
         # ツイート
         self.post_tweet(msg, ng_check=False)
@@ -975,7 +997,7 @@ class WordService:
             "word": word,
             "mean": maen,
             "id": set_id,
-            "created_at": datetime.utcnow()
+            "created_at": datetime.now()
         }
         )
         return doc.id

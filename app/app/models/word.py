@@ -27,8 +27,8 @@ class WordAll(BaseWord):
     kind: str = ""
     tags: List = []
     tags_cnt: Dict = {}
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
     tweeted_at: datetime = datetime(1, 1, 1)
 
 

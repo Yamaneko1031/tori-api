@@ -6,4 +6,204 @@ active
 {% endblock %}
 
 {% block content %}
+
+<form action = /admin/word_list method = "POST" enctype="multipart/form-data" onsubmit="doPreSubmit()">
+    <input type="hidden" name="next_key" value="{{data.next_key}}">
+    <input type="hidden" name="now_key" value="{{data.now_key}}">
+    <input type="hidden" id="selsected_items" name="selsected_items" value="">
+
+    <div class="modal fade" id="MeanEditModal" tabindex="-1" aria-labelledby="MeanEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="z-index: 1500">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="MeanEditModalLabel">意味を入力してください</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label id="mean-target-word" for="message-text" class="col-form-label">item.word:</label>
+                    <textarea class="form-control" id="message-text" name="mean"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary" name="action" value='update_mean' data-bs-dismiss="modal">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="TagEditModal" tabindex="-1" aria-labelledby="TagEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="TagEditModalLabel">意味を入力してください</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label id="tag-target-word" for="message-text" class="col-form-label">item.word:</label>
+                    <textarea id="tag-target-text" class="form-control" id="message-text" name="tags_cnt">item.tags_cnt</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary" name="action" value='update_tag' data-bs-dismiss="modal">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="WordDeleteModal" tabindex="-1" aria-labelledby="WordDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="WordDeleteModalLabel">単語を削除してもよろしいですか？</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label id="delete-target-word" for="message-text" class="col-form-label">item.word:</label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary" name="action" value='delete_word' data-bs-dismiss="modal">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="MeanResetModal" tabindex="-1" aria-labelledby="MeanResetModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="MeanResetModalLabel">単語の意味をリセットしてもよろしいですか？</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label id="mean-reset-target-word" for="message-text" class="col-form-label">item.word:</label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary" name="action" value='mean_init' data-bs-dismiss="modal">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form class="fixed-bottom w-100 bg-light" action = /admin/word_list method = "POST" enctype="multipart/form-data" onsubmit="doPreSubmit()">
+    <input type="hidden" name="next_key" value="{{data.next_key}}">
+    <input type="hidden" name="now_key" value="{{data.now_key}}">
+    <button type="submit" class="btn btn-secondary" name="action" value='fitst'>最初</button>
+    <button type="submit" class="btn btn-secondary" name="action" value='next'>次</button>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MeanResetModal" onclick="MeanResetModalInit()">意味初期化</button>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#WordDeleteModal" onclick="WordDeleteModalInit()">単語削除</button>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MeanEditModal" onclick="MeanEditModalInit()">意味編集</button>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#TagEditModal" onclick="TagEditModalInit()">タグ編集</button>
+</form>
+
+<div>
+    {% set captions = ['word', 'mean', 'tags', 'tags_cnt', 'like', 'cnt', 'kind', 'good', 'bad'] %}
+
+    {% for caption in captions %}
+    <div class="form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" onchange="myfunc(this.checked, '{{loop.index}}')" id="flexCheckChecked" checked>
+        <label class="form-check-label" for="flexCheckChecked">
+            {{ caption }}
+        </label>
+    </div>
+    {% endfor %}
+    
+    <div class="table-responsive">
+        <table class="table table-hover table-sm" id="tabledata">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col"></th>
+                    {% for i in captions %}
+                    <th class="check-control-{{loop.index}}" scope="col">{{ i|e }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in data.doc %}
+                {% set table_data = [item.word, item.mean, item.tags, item.tags_cnt, item.like, item.cnt, item.kind, item.good, item.bad] %}
+                <tr>
+                    <td>
+                        <input class="check_items" type="checkbox" value="">
+                    </td>
+                    {% for table_item in table_data %}
+                        <td class="text-break check-control-{{loop.index}}" style="max-width: 200px">{{ table_item }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>    
+    </div>
+</div>
+
+<script>
+    function GetAllCheckBox() {
+        var target_elements = document.getElementsByClassName("check_items");
+        console.log(target_elements);
+        var ret = [];
+        let list_data = {{ data.doc | tojson  }};
+        console.log(list_data);
+        for( var i = 0; i < target_elements.length; i++ ){
+            console.log(target_elements[i].checked);
+            if( target_elements[i].checked ) {
+                ret.push(list_data[i].word);
+            }
+        }
+        return ret
+    }
+    function GetCheckTag() {
+        var target_elements = document.getElementsByClassName("check_items");
+        console.log(target_elements);
+        var ret = "";
+        let list_data = {{ data.doc | tojson  }};
+        console.log(list_data);
+        for( var i = 0; i < target_elements.length; i++ ){
+            console.log(target_elements[i].checked);
+            if( target_elements[i].checked ) {
+                return JSON.stringify(list_data[i].tags_cnt)
+            }
+        }
+        return ret
+    }
+
+    function MeanResetModalInit() {
+        var element = document.getElementById("mean-reset-target-word");
+        element.innerHTML = GetAllCheckBox();
+    }
+
+    function WordDeleteModalInit() {
+        var element = document.getElementById("delete-target-word");
+        element.innerHTML = GetAllCheckBox();
+    }
+
+    function MeanEditModalInit() {
+        var element = document.getElementById("mean-target-word");
+        element.innerHTML = GetAllCheckBox();
+    }
+    
+    function TagEditModalInit() {
+        var element_caption = document.getElementById("tag-target-word");
+        var element_text = document.getElementById("tag-target-text");
+        element_caption.innerHTML = GetAllCheckBox();
+        element_text.innerHTML = GetCheckTag();
+    }
+
+    function doPreSubmit() {
+        var element = document.getElementById("selsected_items");
+        console.log(element);
+        var target_elements = document.getElementsByClassName("check_items");
+        console.log(target_elements);
+        element.value = GetAllCheckBox();
+        console.log(element.value);
+    }
+
+    function myfunc(value, index) {
+        var element = document.getElementById("tabledata");
+        var target_elements = element.getElementsByClassName("check-control-"+index);
+        for( var i = 0; i < target_elements.length; i++  ){
+            target_elements[i].style.display = value ? "" : "none"
+        }
+    }
+</script>
 {% endblock %}

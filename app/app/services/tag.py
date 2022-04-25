@@ -35,7 +35,7 @@ class TagService:
     #         return False
     #     doc_ref.update({
     #         "used": firestore.Increment(1),
-    #         "updated_at": datetime.utcnow(),
+    #         "updated_at": datetime.now(),
     #     })
     #     return True
 

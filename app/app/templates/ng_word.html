@@ -6,4 +6,43 @@ active
 {% endblock %}
 
 {% block content %}
+
+{% set captions = ['種別', '単語', '意味', '意味(変更前)', '意味(現在)', '時間', 'ツイート', 'IP', 'session'] %}
+
+{% for caption in captions %}
+<div class="form-check-inline">
+    <label class="form-check-label" for="flexCheckChecked{{loop.index}}">
+        <input class="logChecked" type="checkbox" value="" id="flexCheckChecked{{loop.index}}" checked>
+        {{ caption }}
+    </label>
+</div>
+{% endfor %}
+
+<form action = /admin/ng_word method = "POST" onsubmit="doPreSubmit()">
+    <input type="hidden" id="arr" name="arr" value="{{ arr }}">	
+    <input type="submit" value="送信">
+</form>
+
+<button onclick="doPreSubmit()">
+    aaa
+</button>
+
+<script>
+    function doPreSubmit() {
+        var element = document.getElementById("arr");
+        console.log(element);
+        var target_elements = document.getElementsByClassName("logChecked");
+        console.log(target_elements);
+        var data = [];
+        for( var i = 0; i < target_elements.length; i++ ){
+            console.log(target_elements[i].checked);
+            if( target_elements[i].checked ) {
+                data.push(i);
+            }
+        }
+        element.value = data;
+        console.log(data);
+    }
+</script>
+
 {% endblock %}

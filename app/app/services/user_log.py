@@ -37,7 +37,7 @@ class UserLogService:
             "tweet_id": create_ret["tweet"]["id"],
             "word_ref": create_ret["create_ref"],
             "session_id": session_id,
-            "created_at": datetime.utcnow()
+            "created_at": datetime.now()
         })
 
         return doc.id
@@ -63,6 +63,8 @@ class UserLogService:
                     data["now_mean"] = word_data["mean"]
                 else:
                     data["now_mean"] = "(削除済み)"
+                    
+                data["word_ref"] = ""
 
             teach_list.append(data)
 

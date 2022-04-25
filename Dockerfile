@@ -1,8 +1,11 @@
 FROM python:3.8-buster
 
+RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime && \
+    echo "Asia/Tokyo" > /etc/timezone
+
 RUN apt update && \
     apt install -y mecab libmecab-dev libmecab2 swig sudo mecab-ipadic-utf8
-    
+
 RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git && \
     cd mecab-ipadic-neologd/ && \
     ./bin/install-mecab-ipadic-neologd -n -y

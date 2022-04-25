@@ -19,6 +19,61 @@
     </div>
     {% endfor %}
 
+
+    <form action = /admin/log/teach method = "POST" enctype="multipart/form-data" onsubmit="doPreSubmit()">
+        <input type="hidden" id= "form_day" name="day" value={{date.day}}>
+        <input type="hidden" id= "form_month" name="month" value={{date.month}}>
+        <input type="hidden" id= "form_year" name="year" value={{date.year}}>
+        <input type="hidden" id="selsected_items" name="selsected_items" value="">
+
+        <div class="modal fade" id="MeanEditModal" tabindex="-1" aria-labelledby="MeanEditModalLabel" aria-hidden="true">
+            <div class="modal-dialog" style="z-index: 1500">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="MeanEditModalLabel">意味を入力してください</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label id="mean-target-word" for="message-text" class="col-form-label">item.word:</label>
+                        <textarea class="form-control" id="message-text" name="mean"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="submit" class="btn btn-primary" name="action" value='update_mean' data-bs-dismiss="modal">確定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="MenuCommonModal" tabindex="-1" aria-labelledby="MenuCommonModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="MenuCommonModalLabel">関数からセット</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label id="common-target-word" for="message-text" class="col-form-label">関数からセット</label>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="submit" id="common-action" class="btn btn-primary" name="action" value='関数からセット' data-bs-dismiss="modal">確定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <form class="fixed-bottom w-100 bg-light" action = /admin/log/teach method = "POST" enctype="multipart/form-data" onsubmit="doPreSubmit()">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MenuCommonModal" value="delete_tweet" onclick="MenuCommonModalInit(this.value)">ツイート削除</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MenuCommonModal" value="ip_restriction" onclick="MenuCommonModalInit(this.value)">IP制限</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MenuCommonModal" value="session_restriction" onclick="MenuCommonModalInit(this.value)">session制限</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MenuCommonModal" value="mean_init" onclick="MenuCommonModalInit(this.value)">意味初期化</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MeanEditModal" onclick="MeanEditModalInit()">意味編集</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MenuCommonModal" value="delete_word" onclick="MenuCommonModalInit(this.value)">単語削除</button>
+    </form>
+
+
     <div class="table-responsive">
         <table class="table table-hover table-sm" id="tabledata">
             <thead class="table-light">
@@ -32,49 +87,9 @@
             <tbody>
                 {% for item in data %}
                 {% set table_data = [item.action, item.word, item.mean, item.pre_mean, item.now_mean, item.created_at, item.tweet_state, item.ip_address, item.session_id] %}
-                <tr>
+                <tr>                    
                     <td>
-                        <form action = /admin/log/teach method = "POST">
-                            <input type="hidden" id= "form_day" name="day" value={{date.day}}>
-                            <input type="hidden" id= "form_month" name="month" value={{date.month}}>
-                            <input type="hidden" id= "form_year" name="year" value={{date.year}}>
-                            <input type="hidden" name="id" value={{item.id}}>
-
-                            <div class="modal fade" id="MeanEditModal{{loop.index}}" tabindex="-1" aria-labelledby="MeanEditModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="MeanEditModalLabel">意味を入力してください</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <label for="message-text" class="col-form-label">{{item.word}}:</label>
-                                            <textarea class="form-control" id="message-text" name="mean"></textarea>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                                            <button type="submit" class="btn btn-primary" name="action" value='update_mean' data-bs-dismiss="modal">確定</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                                    menu
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                    <li><button type = "submit" class="dropdown-item" name = "action" value = 'ip_watch'>同一IP</button></li>
-                                    {% if item.tweet_state == "tweet" %}
-                                        <li><button type = "submit" class="dropdown-item" name = "action" value = 'delete_tweet'>ツイート削除</button></li>
-                                    {% endif %}
-                                    <li><button type="submit" class="dropdown-item" name="action" value='ip_restriction'>IP制限</button></li>
-                                    <li><button type="submit" class="dropdown-item" name="action" value='session_restriction'>session制限</button></li>
-                                    <li><button type="submit" class="dropdown-item" name="action" value='delete_word'>単語削除</button></li>
-                                    <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#MeanEditModal{{loop.index}}">意味編集</button></li>
-                                </ul>
-                            </div>
-                        </form>
+                        <input class="check_items" type="checkbox" value="{{item.id}}">
                     </td>
                     {% for table_item in table_data %}
                         <td class="text-break check-control-{{loop.index}}" style="max-width: 200px">{{ table_item }}</td>
@@ -86,6 +101,60 @@
     </div>
 
     <script>
+        function GetAllCheckBox() {
+            var target_elements = document.getElementsByClassName("check_items");
+            console.log(target_elements);
+            var ret = [];
+            let list_data = {{ data | tojson  }};
+            console.log(list_data);
+            for( var i = 0; i < target_elements.length; i++ ){
+                console.log(target_elements[i].checked);
+                if( target_elements[i].checked ) {
+                    ret.push(target_elements[i].value);
+                }
+            }
+            return ret
+        }
+
+        function MenuCommonModalInit(value) {
+            var element = document.getElementById("common-target-word");
+            element.innerHTML = GetAllCheckBox();
+            var element = document.getElementById("common-action");
+            console.log(value);
+            element.value = value;
+            var element = document.getElementById("MenuCommonModalLabel");
+            if( value == "delete_tweet" ) {
+                element.innerHTML = "ツイート削除";
+            }
+            else if( value == "ip_restriction" ) {
+                element.innerHTML = "IP制限";
+            }
+            else if( value == "session_restriction" ) {
+                element.innerHTML = "session制限";
+            }
+            else if( value == "mean_init" ) {
+                element.innerHTML = "意味初期化";
+            }
+            else if( value == "delete_word" ) {
+                element.innerHTML = "単語削除";
+            }
+        }
+
+        function MeanEditModalInit() {
+            var element = document.getElementById("mean-target-word");
+            element.innerHTML = GetAllCheckBox();
+        }
+
+        function doPreSubmit() {
+            var element = document.getElementById("selsected_items");
+            console.log(element);
+            var target_elements = document.getElementsByClassName("check_items");
+            console.log(target_elements);
+            element.value = GetAllCheckBox();
+            console.log(element.value);
+        }
+
+
         function myfunc(value, index) {
             var element = document.getElementById("tabledata");
             var target_elements = element.getElementsByClassName("check-control-"+index);

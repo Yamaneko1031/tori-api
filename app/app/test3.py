@@ -1,5 +1,7 @@
 
+import json
 from google.cloud import firestore
+from google.api_core.datetime_helpers import DatetimeWithNanoseconds
 import google
 from datetime import date, datetime
 import time
@@ -28,12 +30,32 @@ word_service = services.word_instance
 tag_service = services.tag_instance
 
 
+
+# date, datetimeの変換関数
+def json_serial(obj):
+    # 日付型の場合には、文字列に変換します
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    if isinstance(obj, (DatetimeWithNanoseconds)):
+        return ""
+    
+    # 上記以外はサポート対象外.
+    raise TypeError ("Type %s not serializable" % type(obj))
+
+word_list = word_service.get_word_list_next(3, None)
+
+# word_list = json.dumps(word_list, default=json_serial)
+
+print(word_list)
+
+# print(datetime.now())
+
 # print("sss")
 
-docs = db.collection("words").where(
-    "word", "==", "むーちゃん").limit(1).get()
+# docs = db.collection("words").where(
+#     "word", "==", "むーちゃん").limit(1).get()
 
-print(docs[0].to_dict())
+# print(docs[0].to_dict())
             
 # a = models.WordCreate()
 # a.word = "test"
@@ -56,7 +78,7 @@ print(docs[0].to_dict())
 
 # DatetimeWithNanoseconds(2020, 6, 22, 17, 1, 30, 12345)
 # a = google.api_core.datetime_helpers.DatetimeWithNanoseconds(2019, 2, 12, 3, 0, 11, 537650, tzinfo=<UTC>)
-# a = google.api_core.datetime_helpers.DatetimeWithNanoseconds(datetime.utcnow())
+# a = google.api_core.datetime_helpers.DatetimeWithNanoseconds(datetime.now())
 # print(a)
 
 # for a in word_list["doc"]:
@@ -125,7 +147,7 @@ print(docs[0].to_dict())
 # data = system_service.get_tweet_cnt()
 # print(data)
 
-# dt_now = datetime.utcnow()
+# dt_now = datetime.now()
 # nokori = 60 - dt_now.minute
 # if 0 < nokori:
 #     print("いっぱいお話したから{}分くらい休憩するの。".format(nokori))
@@ -457,7 +479,7 @@ print(docs[0].to_dict())
 #     doc_ref = colection.document(word)
 #     doc_ref.update({
 #         "used": firestore.Increment(1),
-#         "updated_at": datetime.utcnow(),
+#         "updated_at": datetime.now(),
 #     })
 
 # use_tag1("すごい")
@@ -482,7 +504,7 @@ print(docs[0].to_dict())
 #         "word": word,
 #         "pnt": pnt,
 #         "used": 0,
-#         "updated_at": datetime.utcnow(),
+#         "updated_at": datetime.now(),
 #     })
 
 # colection = db.collection("tags2")
@@ -492,7 +514,7 @@ print(docs[0].to_dict())
 #         "word": word,
 #         "pnt": pnt,
 #         "used": 0,
-#         "updated_at": datetime.utcnow(),
+#         "updated_at": datetime.now(),
 #     })
 
 # colection = db.collection(u'system/TAG/TAG1')
