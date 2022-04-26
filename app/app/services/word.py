@@ -601,6 +601,9 @@ class WordService:
                 ret["state"] = "ng_ip"
             elif self.ng_text_check(msg):
                 ret["state"] = "ng_text"
+            
+            if self.ng_text_check2(msg):
+                ret["state"] = "ng_text2"
     
         if ret["state"] == "none":
             if tweet_cnt > LIMIT_CNT:
@@ -713,6 +716,18 @@ class WordService:
 
         return False
 
+    def ng_text_check2(self, text):
+        """ テキスト内にNGワード入っていないかチェックする
+        """
+        check_text = ''.join(text.split())
+        check_text = check_text.lower()
+        check_text = jaconv.kata2hira(check_text)
+        # 正規表現のチェック
+        for ng_regex in self.ng_regex:
+            if re.match(ng_regex, check_text):
+                return True
+        return False
+    
     def ng_text_check(self, text):
         """ テキスト内にNGワード入っていないかチェックする
         """
@@ -764,6 +779,11 @@ class WordService:
         if ret["state"] == "ng_session" or ret["state"] == "ng_ip" or ret["state"] == "ng_text":
             data["kind"] = "NG"
             word_ref.update(data)
+        elif ret["state"] == "ng_text2":
+            data["kind"] = "NG"
+            word_ref.update(data)
+            system_service.add_ng_session(session_id)
+            self.renew_ng_list()
             
         if ret["state"] == "tweet":
             # ツイートしたワードの情報更新
@@ -799,6 +819,11 @@ class WordService:
         if ret["state"] == "ng_session" or ret["state"] == "ng_ip" or ret["state"] == "ng_text":
             data["kind"] = "NG"
             word_ref.update(data)
+        elif ret["state"] == "ng_text2":
+            data["kind"] = "NG"
+            word_ref.update(data)
+            system_service.add_ng_session(session_id)
+            self.renew_ng_list()
             
         if ret["state"] == "tweet":
             # ツイートしたワードの情報更新

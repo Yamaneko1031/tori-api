@@ -7,6 +7,15 @@ active
 
 {% block content %}
 
+<div>
+    <form action = /admin/word_list method = "POST">
+        <input type="hidden" name="next_key" value="{{data.next_key}}">
+        <input type="hidden" name="now_key" value="{{data.now_key}}">
+        <input type="hidden" name="selsected_items" value="">
+        <button type="submit" class="btn btn-primary" name="action" value="">更新</button>
+    </form>
+</div>
+
 <form action = /admin/word_list method = "POST" enctype="multipart/form-data" onsubmit="doPreSubmit()">
     <input type="hidden" name="next_key" value="{{data.next_key}}">
     <input type="hidden" name="now_key" value="{{data.now_key}}">
@@ -35,7 +44,7 @@ active
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="TagEditModalLabel">意味を入力してください</h5>
+                    <h5 class="modal-title" id="TagEditModalLabel">タグを入力してください</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

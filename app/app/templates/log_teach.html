@@ -4,8 +4,15 @@
 
 {% block content %}
 
-    <div>
+    <div class="d-flex flex-row">
         <a href="/admin/log/calendar">カレンダー</a>
+        <form action = /admin/log/teach method = "POST">
+            <input type="hidden" name="day" value={{date.day}}>
+            <input type="hidden" name="month" value={{date.month}}>
+            <input type="hidden" name="year" value={{date.year}}>
+            <input type="hidden" name="selsected_items" value="">
+            <button type="submit" class="btn btn-primary" name="action" value="">更新</button>
+        </form>
     </div>
 
     {% set captions = ['種別', '単語', '意味', '意味(変更前)', '意味(現在)', '時間', 'ツイート', 'IP', 'session'] %}
@@ -64,15 +71,14 @@
         </div>
     </form>
 
-    <form class="fixed-bottom w-100 bg-light" action = /admin/log/teach method = "POST" enctype="multipart/form-data" onsubmit="doPreSubmit()">
+    <div class="fixed-bottom w-100 bg-light">
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MenuCommonModal" value="delete_tweet" onclick="MenuCommonModalInit(this.value)">ツイート削除</button>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MenuCommonModal" value="ip_restriction" onclick="MenuCommonModalInit(this.value)">IP制限</button>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MenuCommonModal" value="session_restriction" onclick="MenuCommonModalInit(this.value)">session制限</button>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MenuCommonModal" value="mean_init" onclick="MenuCommonModalInit(this.value)">意味初期化</button>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MeanEditModal" onclick="MeanEditModalInit()">意味編集</button>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#MenuCommonModal" value="delete_word" onclick="MenuCommonModalInit(this.value)">単語削除</button>
-    </form>
-
+    </div>
 
     <div class="table-responsive">
         <table class="table table-hover table-sm" id="tabledata">
