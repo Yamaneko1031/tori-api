@@ -30,23 +30,60 @@ word_service = services.word_instance
 tag_service = services.tag_instance
 
 
+system_service.add_ng_session("aaa")
+system_service.add_ng_session("bbb")
+system_service.add_ng_session("ccc")
+
+system_service.delete_ng_session("bbb")
+
+# print(word_service.ng_text_check("ｒタ　っく　ﾁ"))
+
+# ng_list = system_service.get_ng_list()
+# new_list = []
+# for ng in ng_list:
+#     check_text = ''.join(ng.split())
+#     check_text = check_text.lower()
+#     check_text = jaconv.h2z(check_text, kana=True, digit=False, ascii=False)
+#     check_text = jaconv.z2h(check_text, kana=False, digit=True, ascii=True)
+#     check_text = jaconv.kata2hira(check_text)
+#     new_list.append(check_text)
+
+
+# print(new_list)
+# new_list = list(set(new_list))
+# print(new_list)
+
+# system_service.set_ng_list(new_list)
+
+# system_service.add_ng_regex(".*県.*市.*")
+# system_service.add_ng_regex(".*県.*区.*")
+# system_service.add_ng_regex(".*市.*区.*")
+# system_service.add_ng_regex(".*区.*町.*")
+# system_service.add_ng_regex(".*市.*町.*")
+# system_service.add_ng_regex(".*都.*市.*")
+# system_service.add_ng_regex(".*都.*区.*")
+# system_service.add_ng_regex(".*府.*市.*")
+# system_service.add_ng_regex(".*府.*区.*")
+# system_service.add_ng_regex(".*た.*く.*ち.*")
+
+
 
 # date, datetimeの変換関数
-def json_serial(obj):
-    # 日付型の場合には、文字列に変換します
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    if isinstance(obj, (DatetimeWithNanoseconds)):
-        return ""
+# def json_serial(obj):
+#     # 日付型の場合には、文字列に変換します
+#     if isinstance(obj, (datetime, date)):
+#         return obj.isoformat()
+#     if isinstance(obj, (DatetimeWithNanoseconds)):
+#         return ""
     
-    # 上記以外はサポート対象外.
-    raise TypeError ("Type %s not serializable" % type(obj))
+#     # 上記以外はサポート対象外.
+#     raise TypeError ("Type %s not serializable" % type(obj))
 
-word_list = word_service.get_word_list_next(3, None)
-
+# word_list = word_service.get_word_list_next(3, None)
+# a = word_service.ng_text_check("ﾀｸｯﾁ２2AＡ")
 # word_list = json.dumps(word_list, default=json_serial)
 
-print(word_list)
+# print(a)
 
 # print(datetime.now())
 

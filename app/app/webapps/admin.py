@@ -142,7 +142,72 @@ async def admin_word_list(request: Request):
 async def admin(request: Request):
     result = await request.form()
     # print(result._dict)
-    if "arr" in result._dict:
-        arr2 = re.sub('(\[|\'|\]|\s)', '', result._dict["arr"]).split(',')
-        print(arr2)
-    return templates.TemplateResponse("ng_word.html", {"request": request})
+    
+    if "action" in result._dict:
+        if result._dict["action"] == "add_ng":
+            system_service.add_ng_list(word_service.check_text_conv(result._dict["input"]))
+        elif result._dict["action"] == "delete_ng":
+            system_service.delete_ng_list(result._dict["input"])
+            
+        word_service.renew_ng_list()
+    
+    ng_list = system_service.get_ng_list()
+    
+    return templates.TemplateResponse("ng_word.html", {"request": request, "data": ng_list})
+
+
+@router.get("/admin/ng_regex")
+@router.post("/admin/ng_regex")
+async def admin(request: Request):
+    result = await request.form()
+    # print(result._dict)
+    
+    if "action" in result._dict:
+        if result._dict["action"] == "add_ng":
+            system_service.add_ng_regex_ng_list(result._dict["input"])
+        elif result._dict["action"] == "delete_ng":
+            system_service.delete_ng_regex(result._dict["input"])
+            
+        word_service.renew_ng_list()
+    
+    ng_list = system_service.get_ng_regex()
+    
+    return templates.TemplateResponse("ng_regex.html", {"request": request, "data": ng_list})
+
+
+@router.get("/admin/ng_session")
+@router.post("/admin/ng_session")
+async def admin(request: Request):
+    result = await request.form()
+    # print(result._dict)
+    
+    if "action" in result._dict:
+        if result._dict["action"] == "add_ng":
+            system_service.add_ng_session(result._dict["input"])
+        elif result._dict["action"] == "delete_ng":
+            system_service.delete_ng_session(result._dict["input"])
+            
+        word_service.renew_ng_list()
+    
+    ng_list = system_service.get_ng_session()
+    
+    return templates.TemplateResponse("ng_session.html", {"request": request, "data": ng_list})
+
+
+@router.get("/admin/ng_ip")
+@router.post("/admin/ng_ip")
+async def admin(request: Request):
+    result = await request.form()
+    # print(result._dict)
+    
+    if "action" in result._dict:
+        if result._dict["action"] == "add_ng":
+            system_service.add_ng_ip(result._dict["input"])
+        elif result._dict["action"] == "delete_ng":
+            system_service.delete_ng_ip(result._dict["input"])
+            
+        word_service.renew_ng_list()
+    
+    ng_list = system_service.get_ng_ip()
+    
+    return templates.TemplateResponse("ng_ip.html", {"request": request, "data": ng_list})

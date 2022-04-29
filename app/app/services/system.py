@@ -1,5 +1,6 @@
 from uuid import UUID
 from datetime import datetime
+from typing import List
 
 from google.cloud import firestore
 
@@ -94,20 +95,50 @@ class SystemService:
             "unknown_dec_cnt": firestore.Increment(1),
         }, merge=True)
 
+    def delete_ng_list(self, word):
+        doc_ref = db.collection(self.collection_name).document("NG_LIST")
+        doc_ref.set({
+            "negative": firestore.ArrayRemove([word])
+        }, merge=True)
+        
     def add_ng_list(self, word):
         doc_ref = db.collection(self.collection_name).document("NG_LIST")
         doc_ref.set({
             "negative": firestore.ArrayUnion([word])
         }, merge=True)
 
+    def set_ng_list(self, word_list: List[str]):
+        doc_ref = db.collection(self.collection_name).document("NG_LIST")
+        doc_ref.set({
+            "negative": word_list
+        }, merge=True)
+        
     def get_ng_list(self):
         doc = db.collection(self.collection_name).document("NG_LIST").get()
         return doc.to_dict()["negative"]
 
+    def delete_ng_regex(self, word):
+        doc_ref = db.collection(self.collection_name).document("NG_LIST")
+        doc_ref.set({
+            "regex": firestore.ArrayRemove([word])
+        }, merge=True)
+        
+    def add_ng_regex(self, word):
+        doc_ref = db.collection(self.collection_name).document("NG_LIST")
+        doc_ref.set({
+            "regex": firestore.ArrayUnion([word])
+        }, merge=True)
+        
     def get_ng_regex(self):
         doc = db.collection(self.collection_name).document("NG_LIST").get()
         return doc.to_dict()["regex"]
 
+    def delete_ng_ip(self, ip):
+        doc_ref = db.collection(self.collection_name).document("NG_LIST")
+        doc_ref.set({
+            "ip": firestore.ArrayRemove([ip])
+        }, merge=True)
+        
     def add_ng_ip(self, ip):
         doc_ref = db.collection(self.collection_name).document("NG_LIST")
         doc_ref.set({
@@ -118,6 +149,12 @@ class SystemService:
         doc = db.collection(self.collection_name).document("NG_LIST").get()
         return doc.to_dict()["ip"]
     
+    def delete_ng_session(self, session_id):
+        doc_ref = db.collection(self.collection_name).document("NG_LIST")
+        doc_ref.set({
+            "session_id": firestore.ArrayRemove([session_id])
+        }, merge=True)
+        
     def add_ng_session(self, session_id):
         doc_ref = db.collection(self.collection_name).document("NG_LIST")
         doc_ref.set({
@@ -225,4 +262,11 @@ class SystemService:
             "tweet_cnt": 0
         }, merge=True)
 
+    def set_tweet_cnt(self, cnt: int):
+        doc_ref = db.collection(
+            self.collection_name).document("TOTAL")
+        doc_ref.set({
+            "tweet_cnt": cnt
+        }, merge=True)
+        
 system_instance = SystemService()

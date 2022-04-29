@@ -1,15 +1,15 @@
 {% extends "base.html" %} {% block head %}
 {% endblock %}
 
-{% block nav_ng_word %}
+{% block nav_ng_session %}
 active
 {% endblock %}
 
 {% block content %}
 
-<form class="row" action=/admin/ng_word method="POST">
+<form class="row" action=/admin/ng_session method="POST">
   <div class="col-auto">
-    <input type="text" class="form-control" id="inputPassword2" placeholder="NGワード追加" name="input">
+    <input type="text" class="form-control" id="input_text" placeholder="NGワード追加" name="input">
   </div>
   <div class="col-auto">
     <button type="submit" class="btn btn-primary" name="action" value='add_ng'>追加</button>
@@ -30,7 +30,7 @@ active
                     {{item}}
                 </td>
                 <td>
-                    <form action=/admin/ng_word method="POST">
+                    <form action=/admin/ng_session method="POST">
                         <input type="hidden" name="input" value="{{item}}">
                         <button type="submit" class="btn btn-danger" name="action" value='delete_ng'>削除</button>
                     </form>

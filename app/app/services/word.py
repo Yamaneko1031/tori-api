@@ -716,12 +716,20 @@ class WordService:
 
         return False
 
-    def ng_text_check2(self, text):
+    def check_text_conv(self, text):
         """ テキスト内にNGワード入っていないかチェックする
         """
         check_text = ''.join(text.split())
         check_text = check_text.lower()
+        check_text = jaconv.h2z(check_text, kana=True, digit=False, ascii=False)
+        check_text = jaconv.z2h(check_text, kana=False, digit=True, ascii=True)
         check_text = jaconv.kata2hira(check_text)
+        return check_text
+    
+    def ng_text_check2(self, text):
+        """ テキスト内にNGワード入っていないかチェックする
+        """
+        check_text = self.check_text_conv(text)
         # 正規表現のチェック
         for ng_regex in self.ng_regex:
             if re.match(ng_regex, check_text):
@@ -731,9 +739,7 @@ class WordService:
     def ng_text_check(self, text):
         """ テキスト内にNGワード入っていないかチェックする
         """
-        check_text = ''.join(text.split())
-        check_text = check_text.lower()
-        check_text = jaconv.kata2hira(check_text)
+        check_text = self.check_text_conv(text)
         # 7文字以上の数字はNG        
         if len(re.sub(r'\D', '', text)) >= 7:
             return True
