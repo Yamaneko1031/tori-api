@@ -11,6 +11,7 @@ from app import models, services
 db = firestore.Client()
 logger = logging.getLogger(__name__)
 
+word_service = services.word_instance
 
 class UserLogService:
     collection_name = "action_log"
@@ -34,6 +35,7 @@ class UserLogService:
             "pre_mean": create_ret["pre_mean"],
             "ip_address": ip_adress,
             "tweet_state": create_ret["tweet"]["state"],
+            "tweet_log": create_ret["tweet"]["tweet_log"],
             "tweet_id": create_ret["tweet"]["id"],
             "word_ref": create_ret["create_ref"],
             "session_id": session_id,
@@ -65,6 +67,11 @@ class UserLogService:
                     data["now_mean"] = "(削除済み)"
                     
                 data["word_ref"] = ""
+                
+            if "tweet_log" in data:
+                log = word_service.get_tweet_log(data["tweet_log"])
+                data["tweet_log_state"] = log["state"]
+                data["tweet_log_action"] = log["action"]
 
             teach_list.append(data)
 
@@ -85,6 +92,7 @@ class UserLogService:
         day_ref.collection(self.sub_collection_teach).document(id).get()._reference.set({
             "tweet_state": "delete",
         }, merge=True)
+        
         return True
 
 

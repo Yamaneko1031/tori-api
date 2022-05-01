@@ -99,6 +99,7 @@ class WordService:
     collection_unknown = "unknowns"
     collection_session = "sessions"
     collection_temporary = "temporaries"
+    collection_tweet_log = "tweet_log"
 
     def __init__(self):
         """ コンストラクタ
@@ -592,7 +593,7 @@ class WordService:
         LIMIT_CNT = 95
         ret = {}
         ret["state"] = "none"
-        ret["id"] = 0
+        ret["id"] = ""
         tweet_cnt = system_service.get_tweet_cnt()
         if ng_check:
             if self.ng_session_check(session_id):
@@ -645,7 +646,8 @@ class WordService:
             trend_word, id)
 
         # ツイートする
-        self.post_tweet(msg)
+        ret = self.post_tweet(msg)
+        self.add_tweet_log(ret["id"], msg, ret["state"])
 
     def trend_tweet(self):
         """ ツイッタートレンドからランダムでピックアップしてツイートする
@@ -697,7 +699,8 @@ class WordService:
         # ツイートする
         if msg:
             # print(msg)
-            self.post_tweet(msg)
+            ret = self.post_tweet(msg)
+            self.add_tweet_log(ret["id"], msg, ret["state"])
 
     def ng_word_check(self, word, limit=3):
         """ 指定したワードが不適切な単語かチェックする
@@ -797,6 +800,8 @@ class WordService:
             data["updated_at"] = datetime.now()
             data["kind"] = ""
             word_ref.update(data)
+        
+        ret["tweet_log"] = self.add_tweet_log(ret["id"], msg, ret["state"])
 
         return ret
 
@@ -837,6 +842,8 @@ class WordService:
             data["updated_at"] = datetime.now()
             data["kind"] = ""
             word_ref.update(data)
+            
+        ret["tweet_log"] = self.add_tweet_log(ret["id"], msg, ret["state"])
 
         return ret
 
@@ -867,7 +874,9 @@ class WordService:
             data["updated_at"] = datetime.now()
             doc._reference.update(data)
             # ツイート
-            self.post_tweet(msg)
+            ret = self.post_tweet(msg)
+            self.add_tweet_log(ret["id"], msg, ret["state"])
+            
         else:
             print("remembered_tweet NG2")
 
@@ -884,7 +893,8 @@ class WordService:
                     msg = ("{}は{}なんだって！").format(word, tag)
 
             if msg:
-                self.post_tweet(msg)
+                ret = self.post_tweet(msg)
+                self.add_tweet_log(ret["id"], msg, ret["state"])
                 return msg
             else:
                 return
@@ -929,7 +939,8 @@ class WordService:
                        "https://torichan.app/ext/{}").format(tag["text"], tag["text"], id)
 
         if msg:
-            self.post_tweet(msg)
+            ret = self.post_tweet(msg)
+            self.add_tweet_log(ret["id"], msg, ret["state"])
             return msg
         else:
             return
@@ -949,7 +960,8 @@ class WordService:
         data["updated_at"] = datetime.now()
         ref.update(data)
         # ツイート
-        self.post_tweet(msg, ng_check=False)
+        ret = self.post_tweet(msg, ng_check=False)
+        self.add_tweet_log(ret["id"], msg, ret["state"])
 
     def unknown_word_tweet(self):
         """ 意味を知らないワードについてツイートする
@@ -966,7 +978,8 @@ class WordService:
                "https://torichan.app/ext/{}").format(data["word"], id)
 
         # ツイート
-        self.post_tweet(msg, ng_check=False)
+        ret = self.post_tweet(msg, ng_check=False)
+        self.add_tweet_log(ret["id"], msg, ret["state"])
 
     def janken_tweet(self):
         """ じゃんけん結果のツイートする
@@ -1000,7 +1013,8 @@ class WordService:
                    "https://torichan.app/ext/janken")
 
         # ツイート
-        self.post_tweet(msg, ng_check=False)
+        ret = self.post_tweet(msg, ng_check=False)
+        self.add_tweet_log(ret["id"], msg, ret["state"])
 
     def follow_back(self):
         """ フォローバック処理
@@ -1075,6 +1089,86 @@ class WordService:
             word_list.append(doc.to_dict())
 
         return word_list
+
+
+
+    def add_tweet_log(self, tweet_id: str, message: str, state: str):
+        doc = db.collection(self.collection_tweet_log).document()
+        doc.set({
+            "tweet_id": tweet_id,
+            "message": message,
+            "state": state,
+            "action": "create",
+            "created_at": datetime.now()
+        })
+
+        return str(doc.id)
+
+
+    def tweet_delete(self, ref: str):
+        doc_ref = db.collection(self.collection_tweet_log).document(ref)
+        log_data = doc_ref.get().to_dict()
+        
+        if log_data["tweet_id"] != "":
+            self.delete_tweet(log_data["tweet_id"])
+            data = {
+                "tweet_id": "",
+                "action": "tweet_delete",
+            }
+            doc_ref.update(data)
+
+
+    def tweet_force(self, ref: str):
+        doc_ref = db.collection(self.collection_tweet_log).document(ref)
+        log_data = doc_ref.get().to_dict()
+    
+        ret = self.post_tweet(log_data["message"], "admin", "admin", False)
+        data = {
+            "tweet_id": ret["id"],
+            "action": "tweet_force",
+        }
+        doc_ref.update(data)
+
+    
+    def get_tweet_log(self, ref: str):
+        doc_ref = db.collection(self.collection_tweet_log).document(ref)
+        log_data = doc_ref.get().to_dict()
+        return log_data
+    
+    
+    def get_tweet_log_next(self, limit: int, next_key=None):
+        doc_dict_list = []
+        ref_list = []
+
+        if next_key:
+            docs = db.collection(self.collection_tweet_log).order_by(
+                u'created_at', direction=firestore.Query.DESCENDING).start_after({u'created_at': next_key}).limit(limit).stream()
+
+            for doc in docs:
+                doc_dict_list.append(doc.to_dict())
+                ref_list.append(str(doc.id))
+
+        else:
+            docs = db.collection(self.collection_tweet_log).order_by(
+                u'created_at', direction=firestore.Query.DESCENDING).limit(limit).stream()
+
+            for doc in docs:
+                doc_dict_list.append(doc.to_dict())
+                ref_list.append(str(doc.id))
+        
+        
+        for word_data in doc_dict_list:
+            for key, value in word_data.items():
+                if isinstance(value, (DatetimeWithNanoseconds)):
+                    print(value)
+                    word_data[key] = str(value)
+
+
+        next = doc_dict_list[-1]['created_at']
+        
+        ret = {"doc": doc_dict_list, "ref": ref_list, "next_key": next, "now_key": next_key}
+
+        return ret
 
 
 word_instance = WordService()

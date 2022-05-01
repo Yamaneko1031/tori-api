@@ -22,7 +22,7 @@ tag_service = services.tag_instance
 word_service = services.word_instance
 user_log_service = services.user_log_instance
 system_service = services.system_instance
-
+        
 @router.get("/admin")
 @router.get("/admin/log/calendar")
 def admin(request: Request):
@@ -51,9 +51,7 @@ async def admin(request: Request):
             for item in items:
                 log_data = user_log_service.get_teach_log(year, month, day, item)
                 if log_data["tweet_state"] == "tweet":
-                    word_service.delete_tweet(log_data["tweet_id"])
-                    user_log_service.update_teach_log_tweet_delete(
-                        year, month, day, item)
+                    word_service.tweet_delete(log_data["tweet_log"])
                 else:
                     print("削除済み")
                     
@@ -211,3 +209,40 @@ async def admin(request: Request):
     ng_list = system_service.get_ng_ip()
     
     return templates.TemplateResponse("ng_ip.html", {"request": request, "data": ng_list})
+
+
+@router.get("/admin/tweet_log")
+@router.post("/admin/tweet_log")
+async def admin_tweet_log(request: Request):
+    result = await request.form()
+    print(result)
+    
+    items = []
+    if "selsected_items" in result._dict:
+        items = re.sub('(\[|\'|\]|\s)', '', result._dict["selsected_items"]).split(',')
+        print(items)
+        
+    next_key = None
+    if "action" in result._dict:
+        if result._dict["action"] == "next":
+            if result._dict["next_key"] != 'None':
+                print(result._dict["next_key"])
+                date_time = datetime.fromisoformat(str(result._dict["next_key"]))
+                next_key = DatetimeWithNanoseconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.minute, date_time.second, date_time.microsecond)
+                
+        elif result._dict["action"] == "fitst":
+            pass
+        
+        elif result._dict["action"] == "delete_tweet":
+            for item in items:
+                word_service.tweet_delete(item)
+            
+        elif result._dict["action"] == "force_tweet":
+            for item in items:
+                word_service.tweet_force(item)
+                
+
+    tweet_list = word_service.get_tweet_log_next(20, next_key)
+    # print(word_list["doc"])
+
+    return templates.TemplateResponse("tweet_log.html", {"request": request, "data": tweet_list})

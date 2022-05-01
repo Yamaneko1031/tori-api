@@ -30,11 +30,18 @@ word_service = services.word_instance
 tag_service = services.tag_instance
 
 
-system_service.add_ng_session("aaa")
-system_service.add_ng_session("bbb")
-system_service.add_ng_session("ccc")
+a = models.WordCreate()
+a.word = "テスト"
+a.mean = "動作確認しております３"
+a.kind = ""
+word_service.create(a, "admin", "admin")
 
-system_service.delete_ng_session("bbb")
+
+# system_service.add_ng_session("aaa")
+# system_service.add_ng_session("bbb")
+# system_service.add_ng_session("ccc")
+
+# system_service.delete_ng_session("bbb")
 
 # print(word_service.ng_text_check("ｒタ　っく　ﾁ"))
 
