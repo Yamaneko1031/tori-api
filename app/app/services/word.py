@@ -488,7 +488,7 @@ class WordService:
 
     def add_tag(self, word: str, tag: str):
         """ タグ追加
-        """
+        """            
         tag_data = tag_service.get_tag(tag)
         if tag_data:
             docs = db.collection(self.collection_name).where(

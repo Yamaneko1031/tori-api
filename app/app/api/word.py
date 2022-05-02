@@ -53,7 +53,7 @@ def delete_word(word: str):
 
 
 @router.put("/word_mean", response_model=bool, tags=["word"])
-def update_word_mean(request: Request, word_update: models.WordUpdate, session_id: Optional[str] = Header(None)):
+def update_word_mean(word_update: models.WordUpdate, session_id: Optional[str] = Header(None)):
     """ 単語情報更新
     """
     ret_word = word_service.update_mean(
@@ -93,18 +93,31 @@ def update_word_kind(word_update: models.WordUpdateKind):
 
 
 @router.put("/word_tag_add", tags=["word"])
-def add_word_tag(add_tag: models.WordAddTag):
+def add_word_tag(request: Request, add_tag: models.WordAddTag, session_id: Optional[str] = Header(None)):
     """ 単語情報更新：タグ追加
     """
-    if not word_service.add_tag(add_tag.word, add_tag.tag):
+    if word_service.ng_session_check(session_id):
+        return {"detail": "failed"}
+    elif word_service.ng_ip_check(request.client.host):
+        return {"detail": "failed"}
+        
+    if not word_service.add_tag(add_tag.word, add_tag.tag, session_id):
         raise HTTPException(status_code=404, detail="Word not found.")
+
+    word_service.word_tag_add_tweet(add_tag.word, add_tag.tag)
+
     return {"detail": "success"}
 
 
 @router.put("/word_tag_add_text", tags=["word"])
-def add_word_tag_text(add_tag: models.WordAddTagText):
+def add_word_tag_text(request: Request, add_tag: models.WordAddTagText, session_id: Optional[str] = Header(None)):
     """ 単語情報更新：文章内からタグ追加
     """
+    if word_service.ng_session_check(session_id):
+        return []
+    elif word_service.ng_ip_check(request.client.host):
+        return []
+    
     data = word_service.add_tag_for_text(add_tag.word, add_tag.text)
     if not data:
         raise HTTPException(status_code=200, detail="Tag not found.")
