@@ -30,10 +30,22 @@ active
 {% endblock %}
 
 {% block content %}
-  <form name="myform" action = /admin/log/teach method = "POST">
+  <form name="myform" action = /admin/log/day method = "POST">
     <input type="hidden" id= "form_day" name="day" value="">
     <input type="hidden" id= "form_month" name="month" value="">
     <input type="hidden" id= "form_year" name="year" value="">
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="kind" value="teach" id="flexRadioDefault1" checked>
+      <label class="form-check-label" for="flexRadioDefault1">
+        taech
+      </label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="kind" value="action" id="flexRadioDefault2">
+      <label class="form-check-label" for="flexRadioDefault2">
+        action
+      </label>
+    </div>
     <!-- <button id="btn">送信</button> -->
   </form>
   <div id="calendar"></div>

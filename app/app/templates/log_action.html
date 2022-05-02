@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block nav_log %}active{% endblock %}
+
+{% block content %}
+
+    <div class="d-flex flex-row">
+        <a href="/admin/log/calendar">カレンダー</a>
+        <form action = /admin/log/day method = "POST">
+            <input type="hidden" name="day" value={{date.day}}>
+            <input type="hidden" name="month" value={{date.month}}>
+            <input type="hidden" name="year" value={{date.year}}>
+            <input type="hidden" name="kind" value="action">
+            <input type="hidden" name="selsected_items" value="">
+            <button type="submit" class="btn btn-primary" name="action" value="">更新</button>
+        </form>
+    </div>
+
+    {% set captions = ['action', 'IP', 'session'] %}
+
+    {% for caption in captions %}
+    <div class="form-check-inline">
+        <label class="form-check-label" for="flexCheckChecked{{loop.index}}">
+            <input class="form-check-input" type="checkbox" value="" onchange="myfunc(this.checked, '{{loop.index}}')" id="flexCheckChecked{{loop.index}}" checked>
+            {{ caption }}
+        </label>
+    </div>
+    {% endfor %}
+
+    <div class="table-responsive">
+        <table class="table table-hover table-sm" id="tabledata">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col"></th>
+                    {% for i in captions %}
+                    <th class="check-control-{{loop.index}}" scope="col">{{ i|e }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in data %}
+                {% set table_data = [item.action, item.ip_address, item.session_id] %}
+                <tr>                    
+                    <td>
+                        <input class="check_items" type="checkbox" value="{{item.id}}">
+                    </td>
+                    {% for table_item in table_data %}
+                        <td class="text-break check-control-{{loop.index}}" style="max-width: 200px">{{ table_item }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function myfunc(value, index) {
+            var element = document.getElementById("tabledata");
+            var target_elements = element.getElementsByClassName("check-control-"+index);
+            for( var i = 0; i < target_elements.length; i++  ){
+                target_elements[i].style.display = value ? "" : "none"
+            }
+        }
+    </script>
+{% endblock %}

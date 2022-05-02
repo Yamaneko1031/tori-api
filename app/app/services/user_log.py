@@ -16,6 +16,7 @@ word_service = services.word_instance
 class UserLogService:
     collection_name = "action_log"
     sub_collection_teach = "teach_log"
+    sub_collection_action = "action_log"
     collection_word = "words"
     # sub_collection_mean_update = "mean_update_log"
 
@@ -96,4 +97,37 @@ class UserLogService:
         return True
 
 
+    def add_action_log(self, action: str, ip_adress: str, session_id: str):
+        day_ref = db.collection(
+            self.collection_name).document(datetime.today().strftime("%Y-%m-%d"))
+        doc = day_ref.collection(self.sub_collection_action).document()
+        doc.set({
+            "action": action,
+            "ip_address": ip_adress,
+            "session_id": session_id,
+            "created_at": datetime.now()
+        })
+
+        return doc.id
+
+
+    def get_action_logs(self, year: int, month: int, day: int):
+        # print("{:04}-{:02}-{:02}".format(year, month, day))
+        day_ref = db.collection(
+            self.collection_name).document("{:04}-{:02}-{:02}".format(year, month, day))
+
+        docs = day_ref.collection(self.sub_collection_action).order_by(
+            u'created_at', direction=firestore.Query.DESCENDING).stream()
+
+        action_list = []
+        for doc in docs:
+            data = doc.to_dict()
+            data["created_at"] = data["created_at"].strftime(
+                "%Y/%m/%d %H:%M:%S")
+
+            action_list.append(data)
+
+        return action_list
+    
+    
 user_log_instance = UserLogService()

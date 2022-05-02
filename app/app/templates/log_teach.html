@@ -6,10 +6,11 @@
 
     <div class="d-flex flex-row">
         <a href="/admin/log/calendar">カレンダー</a>
-        <form action = /admin/log/teach method = "POST">
+        <form action = /admin/log/day method = "POST">
             <input type="hidden" name="day" value={{date.day}}>
             <input type="hidden" name="month" value={{date.month}}>
             <input type="hidden" name="year" value={{date.year}}>
+            <input type="hidden" name="kind" value="teach">
             <input type="hidden" name="selsected_items" value="">
             <button type="submit" class="btn btn-primary" name="action" value="">更新</button>
         </form>
@@ -27,10 +28,11 @@
     {% endfor %}
 
 
-    <form action = /admin/log/teach method = "POST" enctype="multipart/form-data" onsubmit="doPreSubmit()">
+    <form action = /admin/log/day method = "POST" enctype="multipart/form-data" onsubmit="doPreSubmit()">
         <input type="hidden" id= "form_day" name="day" value={{date.day}}>
         <input type="hidden" id= "form_month" name="month" value={{date.month}}>
         <input type="hidden" id= "form_year" name="year" value={{date.year}}>
+        <input type="hidden" id= "form_kind" name="kind" value="teach">
         <input type="hidden" id="selsected_items" name="selsected_items" value="">
 
         <div class="modal fade" id="MeanEditModal" tabindex="-1" aria-labelledby="MeanEditModalLabel" aria-hidden="true">
