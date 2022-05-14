@@ -172,7 +172,7 @@ async def admin(request: Request):
     
     if "action" in result._dict:
         if result._dict["action"] == "add_ng":
-            system_service.add_ng_regex_ng_list(result._dict["input"])
+            system_service.add_ng_regex(result._dict["input"])
         elif result._dict["action"] == "delete_ng":
             system_service.delete_ng_regex(result._dict["input"])
             
