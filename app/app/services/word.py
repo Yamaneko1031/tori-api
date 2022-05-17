@@ -587,39 +587,28 @@ class WordService:
                 if 0 < nokori:
                     print("いっぱいお話ししてちょっと疲れたの。\n{}分くらい休憩するの。".format(nokori))
 
-    def post_tweet(self, msg, session_id: str = "", ip_address: str = "", ng_check: bool = True):
+    def post_tweet(self, msg):
         """ ツイートする
         """
         LIMIT_CNT = 95
         ret = {}
-        ret["state"] = "none"
+        ret["state"] = ""
         ret["id"] = ""
         tweet_cnt = system_service.get_tweet_cnt()
-        if ng_check:
-            if self.ng_session_check(session_id):
-                ret["state"] = "ng_session"
-            elif self.ng_ip_check(ip_address):
-                ret["state"] = "ng_ip"
-            elif self.ng_text_check(msg):
-                ret["state"] = "ng_text"
-            
-            if self.ng_text_check2(msg):
-                ret["state"] = "ng_text2"
-    
-        if ret["state"] == "none":
-            if tweet_cnt > LIMIT_CNT:
-                ret["state"] = "limit"
-            else:
-                status = tweet_api.update_status(msg)
-                system_service.add_tweet_cnt()
-                ret["state"] = "tweet"
-                ret["id"] = status.id
-                if tweet_cnt == LIMIT_CNT:
-                    dt_now = datetime.now()
-                    nokori = 60 - dt_now.minute
-                    if 0 < nokori:
-                        tweet_api.update_status(
-                            "いっぱいお話ししてちょっと疲れたの。\n{}分くらい休憩するの。".format(nokori))
+        
+        if tweet_cnt > LIMIT_CNT:
+            ret["state"] = "limit"
+        else:
+            status = tweet_api.update_status(msg)
+            system_service.add_tweet_cnt()
+            ret["state"] = "tweet"
+            ret["id"] = status.id
+            if tweet_cnt == LIMIT_CNT:
+                dt_now = datetime.now()
+                nokori = 60 - dt_now.minute
+                if 0 < nokori:
+                    tweet_api.update_status(
+                        "いっぱいお話ししてちょっと疲れたの。\n{}分くらい休憩するの。".format(nokori))
 
         return ret
 
@@ -644,10 +633,18 @@ class WordService:
                "だれか教えにきて欲しいな。\n"
                "https://torichan.app/ext/{}").format(
             trend_word, id)
+               
+        tweet_id = ""
+        state = ""
 
         # ツイートする
-        ret = self.post_tweet(msg)
-        self.add_tweet_log(ret["id"], msg, ret["state"])
+        state = self.ng_check(trend_word)
+        if not state:
+            ret = self.post_tweet(msg)
+            tweet_id = ret["id"]
+            state = ret["state"]
+            
+        self.add_tweet_log(tweet_id, msg, state)
 
     def trend_tweet(self):
         """ ツイッタートレンドからランダムでピックアップしてツイートする
@@ -667,8 +664,7 @@ class WordService:
             # ローマ字のみは除外
             if re_roma.fullmatch(trend_word):
                 pass
-            # NGワードチェック
-            elif not self.ng_word_check(trend_word, 3):
+            else:
                 # ツイート内容の生成
                 ret_data = self.get_knowns_list(mean=trend_word)
                 if ret_data["unknown"] and trend_word != ret_data["unknown"]["word"]:
@@ -676,31 +672,67 @@ class WordService:
                     id = self.create_temp(
                         ret_data["unknown"]["word"].replace("#", ""), "意味")
                     msg = ("最近「{}」って言葉をよく耳にするよ！\n"
-                           "でも「{}」がどういう意味かわかんない。\n"
-                           "だれか教えにきて欲しいな。\n"
-                           "https://torichan.app/ext/{}").format(
-                               trend_word, ret_data["unknown"]["word"], id)
+                            "でも「{}」がどういう意味かわかんない。\n"
+                            "だれか教えにきて欲しいな。\n"
+                            "https://torichan.app/ext/{}").format(
+                                trend_word, ret_data["unknown"]["word"], id)
                 elif ret_data["known"] and not ret_data["unknown"]:
                     msg = ("最近「{}」って言葉をよく耳にするよ！\n"
-                           "むーちゃん「{}」って言葉は知ってるよ！\n"
-                           "いっぱい色んな言葉を教えて欲しいな。\n"
-                           "https://torichan.app").format(
-                               trend_word, ret_data["unknown"]["word"])
+                            "むーちゃん「{}」って言葉は知ってるよ！\n"
+                            "いっぱい色んな言葉を教えて欲しいな。\n"
+                            "https://torichan.app").format(
+                                trend_word, ret_data["unknown"]["word"])
                 else:
                     # 内容を保存
                     id = self.create_temp(trend_word.replace("#", ""), "意味")
                     msg = ("最近「{}」って言葉をよく耳にするよ！\n"
-                           "でも、むーちゃんは何の事かよく分かんない。\n"
-                           "だれか教えにきて欲しいな。\n"
-                           "https://torichan.app/ext/{}").format(
-                               trend_word, id)
+                            "でも、むーちゃんは何の事かよく分かんない。\n"
+                            "だれか教えにきて欲しいな。\n"
+                            "https://torichan.app/ext/{}").format(
+                                trend_word, id)
                 break
+            
+            # # NGワードチェック
+            # elif not self.ng_word_check(trend_word, 3):
+            #     # ツイート内容の生成
+            #     ret_data = self.get_knowns_list(mean=trend_word)
+            #     if ret_data["unknown"] and trend_word != ret_data["unknown"]["word"]:
+            #         # 内容を保存
+            #         id = self.create_temp(
+            #             ret_data["unknown"]["word"].replace("#", ""), "意味")
+            #         msg = ("最近「{}」って言葉をよく耳にするよ！\n"
+            #                "でも「{}」がどういう意味かわかんない。\n"
+            #                "だれか教えにきて欲しいな。\n"
+            #                "https://torichan.app/ext/{}").format(
+            #                    trend_word, ret_data["unknown"]["word"], id)
+            #     elif ret_data["known"] and not ret_data["unknown"]:
+            #         msg = ("最近「{}」って言葉をよく耳にするよ！\n"
+            #                "むーちゃん「{}」って言葉は知ってるよ！\n"
+            #                "いっぱい色んな言葉を教えて欲しいな。\n"
+            #                "https://torichan.app").format(
+            #                    trend_word, ret_data["unknown"]["word"])
+            #     else:
+            #         # 内容を保存
+            #         id = self.create_temp(trend_word.replace("#", ""), "意味")
+            #         msg = ("最近「{}」って言葉をよく耳にするよ！\n"
+            #                "でも、むーちゃんは何の事かよく分かんない。\n"
+            #                "だれか教えにきて欲しいな。\n"
+            #                "https://torichan.app/ext/{}").format(
+            #                    trend_word, id)
+            #     break
+
+        tweet_id = ""
+        state = ""
 
         # ツイートする
-        if msg:
-            # print(msg)
+        state = self.ng_check(trend_word)
+        if not state:
             ret = self.post_tweet(msg)
-            self.add_tweet_log(ret["id"], msg, ret["state"])
+            tweet_id = ret["id"]
+            state = ret["state"]
+            
+        self.add_tweet_log(tweet_id, msg, state)
+        
 
     def ng_word_check(self, word, limit=3):
         """ 指定したワードが不適切な単語かチェックする
@@ -774,34 +806,57 @@ class WordService:
                 return True
         return False
 
+    def ng_check(self, msg: str, ip_address: str="", session_id: str=""):
+        """ セッションIDがにNG_リストに入っていないかチェックする
+        """
+        ret = ""
+        if self.ng_session_check(session_id):
+            ret = "ng_session"
+        elif ip_address and self.ng_ip_check(ip_address):
+            ret = "ng_ip"
+        elif session_id and self.ng_text_check(msg):
+            ret = "ng_text"
+        
+        if self.ng_text_check2(msg):
+            ret = "ng_text2"
+        return ret
+    
     def mean_update_tweet(self, word_ref, session_id: str, ip_address: str):
         """ 覚えたワードについてツイートする
         """
         word_data = word_ref.get().to_dict()
         msg = ""
+        tweet_id = ""
+        state = ""
         data = {}
         # ツイート内容生成
         msg = ("「{}」の意味を勘違いしてたの！\n"
                "ほんとは「{}」のことだよ！").format(word_data["word"], word_data["mean"])
-
-        ret = self.post_tweet(msg, session_id, ip_address)
-        if ret["state"] == "ng_session" or ret["state"] == "ng_ip" or ret["state"] == "ng_text":
+        
+        state = self.ng_check(word_data["word"], session_id, ip_address)
+        if not state:
+            state = self.ng_check(word_data["mean"], session_id, ip_address)
+            
+        if state == "ng_session" or state == "ng_ip" or state == "ng_text":
             data["kind"] = "NG"
             word_ref.update(data)
-        elif ret["state"] == "ng_text2":
+        elif state == "ng_text2":
             data["kind"] = "NG"
             word_ref.update(data)
             system_service.add_ng_session(session_id)
             self.renew_ng_list()
+        else:
+            ret = self.post_tweet(msg)
+            state = ret["state"]
+            tweet_id = ret["id"]
+            if ret["state"] == "tweet":
+                # ツイートしたワードの情報更新
+                data["tweeted_at"] = datetime.now()
+                data["updated_at"] = datetime.now()
+                data["kind"] = ""
+                word_ref.update(data)
             
-        if ret["state"] == "tweet":
-            # ツイートしたワードの情報更新
-            data["tweeted_at"] = datetime.now()
-            data["updated_at"] = datetime.now()
-            data["kind"] = ""
-            word_ref.update(data)
-        
-        ret["tweet_log"] = self.add_tweet_log(ret["id"], msg, ret["state"])
+        ret["tweet_log"] = self.add_tweet_log(tweet_id, msg, state)
 
         return ret
 
@@ -810,6 +865,8 @@ class WordService:
         """
         word_data = word_ref.get().to_dict()
         msg = ""
+        tweet_id = ""
+        state = ""
         data = {}
         # ツイート内容生成
         msg = ("今「{}」って言葉を教えてもらったの！\n"
@@ -825,25 +882,31 @@ class WordService:
                     msg = (msg +
                            "\nあと「{}」は{}なんだよ！").format(word_data["word"], tag_data["text"])
 
-        # ツイート
-        ret = self.post_tweet(msg, session_id, ip_address)
-        if ret["state"] == "ng_session" or ret["state"] == "ng_ip" or ret["state"] == "ng_text":
+
+        state = self.ng_check(word_data["word"], session_id, ip_address)
+        if not state:
+            state = self.ng_check(word_data["mean"], session_id, ip_address)
+            
+        if state == "ng_session" or state == "ng_ip" or state == "ng_text":
             data["kind"] = "NG"
             word_ref.update(data)
-        elif ret["state"] == "ng_text2":
+        elif state == "ng_text2":
             data["kind"] = "NG"
             word_ref.update(data)
             system_service.add_ng_session(session_id)
             self.renew_ng_list()
+        else:
+            ret = self.post_tweet(msg)
+            state = ret["state"]
+            tweet_id = ret["id"]
+            if ret["state"] == "tweet":
+                # ツイートしたワードの情報更新
+                data["tweeted_at"] = datetime.now()
+                data["updated_at"] = datetime.now()
+                data["kind"] = ""
+                word_ref.update(data)
             
-        if ret["state"] == "tweet":
-            # ツイートしたワードの情報更新
-            data["tweeted_at"] = datetime.now()
-            data["updated_at"] = datetime.now()
-            data["kind"] = ""
-            word_ref.update(data)
-            
-        ret["tweet_log"] = self.add_tweet_log(ret["id"], msg, ret["state"])
+        ret["tweet_log"] = self.add_tweet_log(tweet_id, msg, state)
 
         return ret
 
@@ -883,34 +946,46 @@ class WordService:
     def word_tag_add_tweet(self, word: str, tag: str):
         """ タグ追加についてツイートする
         """
-        if not self.ng_text_check(word):
-            msg = ""
-            tag_data = tag_service.get_tag(tag)
-            if tag_data:
-                if tag_data["part"] == "形容詞":
-                    msg = ("{}は{}んだって！").format(word, tag)
-                elif tag_data["part"] == "形容動詞":
-                    msg = ("{}は{}なんだって！").format(word, tag)
+        msg = ""
+        tag_data = tag_service.get_tag(tag)
+        if tag_data:
+            if tag_data["part"] == "形容詞":
+                msg = ("{}は{}んだって！").format(word, tag)
+            elif tag_data["part"] == "形容動詞":
+                msg = ("{}は{}なんだって！").format(word, tag)
 
-            if msg:
+        tweet_id = ""
+        state = ""
+
+        if msg:
+            # ツイートする
+            state = self.ng_check(word)
+            if not state:
                 ret = self.post_tweet(msg)
-                self.add_tweet_log(ret["id"], msg, ret["state"])
-                return msg
-            else:
-                return
-        else:
-            print("remembered_tweet ng word")
+                tweet_id = ret["id"]
+                state = ret["state"]
+                
+            self.add_tweet_log(tweet_id, msg, state)
+            return msg
+        return
 
     def word_relation_tag_tweet(self):
         """ タグ追加についてツイートする
         """
         msg = ""
+        tweet_id = ""
+        state = ""
         tag = tag_service.get_random_tag_more0()
 
         word1 = self.get_common_tag_word(word="", tag=tag["text"])
         if word1:
             word2 = self.get_common_tag_word(word=word1.word, tag=tag["text"])
+            state = self.ng_check(word1.word)
+            
             if word2:
+                if not state:
+                    state = self.ng_check(word2.word)
+                    
                 if tag["part"] == "形容詞":
                     # 内容を保存
                     id = self.create_temp(tag["text"], "形容詞関連")
@@ -939,8 +1014,12 @@ class WordService:
                        "https://torichan.app/ext/{}").format(tag["text"], tag["text"], id)
 
         if msg:
-            ret = self.post_tweet(msg)
-            self.add_tweet_log(ret["id"], msg, ret["state"])
+            if not state:
+                ret = self.post_tweet(msg)
+                tweet_id = ret["id"]
+                state = ret["state"]
+                
+            self.add_tweet_log(tweet_id, msg, state)
             return msg
         else:
             return
@@ -959,9 +1038,20 @@ class WordService:
         data["tweeted_at"] = datetime.now()
         data["updated_at"] = datetime.now()
         ref.update(data)
+        
+        tweet_id = ""
+        state = ""
         # ツイート
-        ret = self.post_tweet(msg, ng_check=False)
-        self.add_tweet_log(ret["id"], msg, ret["state"])
+        state = self.ng_check(doc_dict["word"])
+        if not state:
+            state = self.ng_check(doc_dict["mean"])
+        
+        if not state:
+            ret = self.post_tweet(msg)
+            tweet_id = ret["id"]
+            state = ret["state"]
+        
+        self.add_tweet_log(tweet_id, msg, state)
 
     def unknown_word_tweet(self):
         """ 意味を知らないワードについてツイートする
@@ -977,9 +1067,17 @@ class WordService:
                "だれか教えにきて欲しいな。\n"
                "https://torichan.app/ext/{}").format(data["word"], id)
 
+        tweet_id = ""
+        state = ""
         # ツイート
-        ret = self.post_tweet(msg, ng_check=False)
-        self.add_tweet_log(ret["id"], msg, ret["state"])
+        state = self.ng_check(data["word"])
+        
+        if not state:
+            ret = self.post_tweet(msg)
+            tweet_id = ret["id"]
+            state = ret["state"]
+        
+        self.add_tweet_log(tweet_id, msg, state)
 
     def janken_tweet(self):
         """ じゃんけん結果のツイートする
@@ -1013,7 +1111,7 @@ class WordService:
                    "https://torichan.app/ext/janken")
 
         # ツイート
-        ret = self.post_tweet(msg, ng_check=False)
+        ret = self.post_tweet(msg)
         self.add_tweet_log(ret["id"], msg, ret["state"])
 
     def follow_back(self):

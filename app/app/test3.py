@@ -8,8 +8,10 @@ import time
 import re
 import random
 from pykakasi import kakasi
-
+import requests
 import sys
+import os
+import tweepy
 
 sys.path.append('/app')
 
@@ -27,14 +29,122 @@ conv = kakasi.getConverter()
 
 system_service = services.system_instance
 word_service = services.word_instance
+user_service = services.user_instance
 tag_service = services.tag_instance
 
+ret = word_service.ng_check("aaa", "3333")
+print(ret)
+# ret = user_service.get_from_session("2222")
+# print(ret)
+# a = models.TaughtWord()
+# a.word = "555"
+# a.mean = "6666"
+# ret = user_service.add_taught_word("11111", a)
+# print(ret)
 
-a = models.WordCreate()
-a.word = "テスト"
-a.mean = "動作確認しております３"
-a.kind = ""
-word_service.create(a, "admin", "admin")
+# auth = tweepy.OAuthHandler(
+#     os.environ['CONSUMER_KEY'], os.environ['CONSUMER_SECRET'])
+# auth.set_access_token(os.environ['ACCESS_TOKEN'],
+#                       os.environ['ACCESS_TOKEN_SECRET'])
+
+# tweet_api = tweepy.API(auth)
+
+# from requests_oauthlib import OAuth1Session
+# from urllib.parse import parse_qsl
+
+
+# consumer_key = os.environ['CONSUMER_KEY']
+# consumer_secret = os.environ['CONSUMER_SECRET']
+
+# base_url = 'https://api.twitter.com/'
+
+# request_token_url = base_url + 'oauth/request_token'
+# authenticate_url = base_url + 'oauth/authenticate'
+# access_token_url = base_url + 'oauth/access_token'
+# authorize_url = base_url + 'oauth/authorize'
+
+# base_json_url = 'https://api.twitter.com/1.1/%s.json'
+# user_timeline_url = base_json_url % ('statuses/user_timeline')
+
+
+# oauth_client = OAuth1Session(consumer_key, client_secret=consumer_secret)
+# # url = 'https://api.oauth_client.com/1/account/settings.json'
+# # response = oauth_client.get(url)
+
+# fetch_response = oauth_client.fetch_request_token(request_token_url)
+# resource_owner_key = fetch_response.get('oauth_token')
+# resource_owner_secret = fetch_response.get('oauth_token_secret')
+# url = oauth_client.authorization_url(authorize_url)
+# oauth_response = oauth_client.parse_authorization_response('https://torichan.app/')
+# verifier = oauth_response.get('oauth_verifier')
+
+# print(fetch_response)    # HTTPのステータスコード取得
+# print(resource_owner_key)    # レスポンスのHTMLを文字列で取得
+# print(resource_owner_secret)    # レスポンスのHTMLを文字列で取得
+# print(url)    # レスポンスのHTMLを文字列で取得
+
+# >>> redirect_response = 'https://127.0.0.1/callback?oauth_token=kjerht2309uf&oauth_token_secret=lsdajfh923874&oauth_verifier=w34o8967345'
+# >>> oauth_session = OAuth1Session('client-key', client_secret='secret')
+# >>> oauth_session.parse_authorization_response(redirect_response)
+# {
+    
+# oauth_client2 = OAuth1Session(consumer_key,
+#                       client_secret=consumer_secret,
+#                       resource_owner_key=resource_owner_key,
+#                       resource_owner_secret=resource_owner_secret,
+#                       verifier=verifier)
+# oauth_tokens = oauth_client2.fetch_access_token(access_token_url)
+# {
+#     "oauth_token": "6253282-eWudHldSbIaelX7swmsiHImEL4KinwaGloHANdrY",
+#     "oauth_token_secret": "2EEfA6BG3ly3sR3RjE0IBSnlQu4ZrUzPiYKmrkVU"
+# }
+# resource_owner_key2 = oauth_tokens.get('oauth_token')
+# resource_owner_secret2 = oauth_tokens.get('oauth_token_secret')
+
+# print(resource_owner_key2)    # レスポンスのHTMLを文字列で取得
+# print(resource_owner_secret2)    # レスポンスのHTMLを文字列で取得
+
+# response = twitter.post(
+#     request_token_url,
+#     params={'oauth_callback': 'https://torichan.app/'}
+# )
+
+# request_token = dict(parse_qsl(response.content.decode("utf-8")))
+    
+# url = 'https://api.twitter.com/oauth/request_token'
+# # response = requests.post(url,params={"oauth_callback":"https://torichan.app/"})
+
+# url = 'https://api.github.com/some/endpoint'
+# payload = {'some': 'data'}
+# headers = {'oauth_callback': 'https://torichan.app/',
+#            'oauth_consumer_key': os.environ['CONSUMER_KEY'],
+#            'oauth_nonce': '123456789',
+#            'oauth_signature': os.environ['CONSUMER_KEY'],
+#            'oauth_signature_method': 'HMAC-SHA1',
+#            'oauth_timestamp': time.localtime(),
+#            'oauth_version': os.environ['CONSUMER_KEY']
+#            }
+# response = requests.post(url, data=json.dumps(payload), headers=headers)
+
+# curl --request POST \
+#   --url 'https://api.twitter.com/oauth/request_token?oauth_callback=$HTTP_ENCODED_CALLBACK_URL' \
+#   --header 'Authorization: OAuth
+# oauth_consumer_key="$oauth_consumer_key",
+# oauth_nonce="$oauth_nonce",
+# oauth_signature="oauth_signature",
+# oauth_signature_method="HMAC-SHA1",
+# oauth_timestamp="$timestamp",
+# oauth_version="1.0"'
+
+# response = requests.post(url)
+
+
+
+# a = models.WordCreate()
+# a.word = "テスト"
+# a.mean = "動作確認しております３"
+# a.kind = ""
+# word_service.create(a, "admin", "admin")
 
 
 # system_service.add_ng_session("aaa")
