@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Request
+from typing import Optional
 
 from app import models, services
 
@@ -20,9 +21,9 @@ def get_user_from_id(id: str):
     return user
 
 
-@router.get("/users/session/{id}", response_model=models.User, tags=["user"])
-def get_user_from_session(id: str):
-    user = user_service.get_from_session(id)
+@router.get("/users", response_model=models.User, tags=["user"])
+def get_user_from_session(session_id: Optional[str] = Header(None)):
+    user = user_service.get_from_session(session_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
     return user
@@ -52,6 +53,17 @@ def delete_user(id: str):
     return user_service.delete(id)
 
 
+@router.post("/get_oauth_url", response_model=str, tags=["user"])
+def delete_user():
+    return user_service.get_oauth_url()
+
+
+@router.post("/oauth_login", response_model=models.User, tags=["user"])
+def delete_user(request: Request, oauth_login: models.OauthLogin, session_id: Optional[str] = Header(None)):
+    user = user_service.oauth_login(oauth_login.oauth_token, oauth_login.oauth_verifier, session_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+    return user
 
 # import os
 # from requests_oauthlib import OAuth1Session

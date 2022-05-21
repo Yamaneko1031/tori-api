@@ -638,11 +638,9 @@ class WordService:
         state = ""
 
         # ツイートする
-        state = self.ng_check(trend_word)
-        if not state:
-            ret = self.post_tweet(msg)
-            tweet_id = ret["id"]
-            state = ret["state"]
+        ret = self.post_tweet(msg)
+        tweet_id = ret["id"]
+        state = ret["state"]
             
         self.add_tweet_log(tweet_id, msg, state)
 
@@ -726,7 +724,7 @@ class WordService:
 
         # ツイートする
         state = self.ng_check(trend_word)
-        if not state:
+        if state == "":
             ret = self.post_tweet(msg)
             tweet_id = ret["id"]
             state = ret["state"]
@@ -833,9 +831,9 @@ class WordService:
         msg = ("「{}」の意味を勘違いしてたの！\n"
                "ほんとは「{}」のことだよ！").format(word_data["word"], word_data["mean"])
         
-        state = self.ng_check(word_data["word"], session_id, ip_address)
+        state = self.ng_check(word_data["word"], ip_address, session_id)
         if not state:
-            state = self.ng_check(word_data["mean"], session_id, ip_address)
+            state = self.ng_check(word_data["mean"], ip_address, session_id)
             
         if state == "ng_session" or state == "ng_ip" or state == "ng_text":
             data["kind"] = "NG"
@@ -883,9 +881,9 @@ class WordService:
                            "\nあと「{}」は{}なんだよ！").format(word_data["word"], tag_data["text"])
 
 
-        state = self.ng_check(word_data["word"], session_id, ip_address)
+        state = self.ng_check(word_data["word"], ip_address, session_id)
         if not state:
-            state = self.ng_check(word_data["mean"], session_id, ip_address)
+            state = self.ng_check(word_data["mean"], ip_address, session_id)
             
         if state == "ng_session" or state == "ng_ip" or state == "ng_text":
             data["kind"] = "NG"
@@ -960,7 +958,8 @@ class WordService:
         if msg:
             # ツイートする
             state = self.ng_check(word)
-            if not state:
+
+            if state == "":
                 ret = self.post_tweet(msg)
                 tweet_id = ret["id"]
                 state = ret["state"]
@@ -985,19 +984,19 @@ class WordService:
             if word2:
                 if not state:
                     state = self.ng_check(word2.word)
-                    
+
                 if tag["part"] == "形容詞":
                     # 内容を保存
                     id = self.create_temp(tag["text"], "形容詞関連")
                     msg = ("{}や{}は{}んだよ。\n"
-                           "{}ものをもっと教えてほしいな。\n"
-                           "https://torichan.app/ext/{}").format(word1.word, word2.word, tag["text"], tag["text"], id)
+                        "{}ものをもっと教えてほしいな。\n"
+                        "https://torichan.app/ext/{}").format(word1.word, word2.word, tag["text"], tag["text"], id)
                 elif tag["part"] == "形容動詞":
                     # 内容を保存
                     id = self.create_temp(tag["text"], "形容動詞関連")
                     msg = ("{}や{}は{}なんだよ。\n"
-                           "{}なものをもっと教えてほしいな。\n"
-                           "https://torichan.app/ext/{}").format(word1.word, word2.word, tag["text"], tag["text"], id)
+                        "{}なものをもっと教えてほしいな。\n"
+                        "https://torichan.app/ext/{}").format(word1.word, word2.word, tag["text"], tag["text"], id)
 
         if not msg:
             if tag["part"] == "形容詞":
@@ -1014,7 +1013,7 @@ class WordService:
                        "https://torichan.app/ext/{}").format(tag["text"], tag["text"], id)
 
         if msg:
-            if not state:
+            if state == "":
                 ret = self.post_tweet(msg)
                 tweet_id = ret["id"]
                 state = ret["state"]
@@ -1046,7 +1045,7 @@ class WordService:
         if not state:
             state = self.ng_check(doc_dict["mean"])
         
-        if not state:
+        if state == "":
             ret = self.post_tweet(msg)
             tweet_id = ret["id"]
             state = ret["state"]
@@ -1072,7 +1071,7 @@ class WordService:
         # ツイート
         state = self.ng_check(data["word"])
         
-        if not state:
+        if state == "":
             ret = self.post_tweet(msg)
             tweet_id = ret["id"]
             state = ret["state"]

@@ -24,18 +24,22 @@ class UserService:
         return self.get_from_id(user_create.twitter_id)
 
 
-    def get_from_id(self, id: str) -> models.User:
+    def get_from_id(self, id: str, is_ref: bool=False) -> models.User:
         doc_ref = db.collection(self.collection_name).document(id)
         doc = doc_ref.get()
         if doc.exists:
+            if is_ref:
+                return doc_ref
             return models.User(**doc.to_dict())
         return
 
 
-    def get_from_session(self, session_id: str) -> models.User:
+    def get_from_session(self, session_id: str, is_ref: bool=False) -> models.User:
         docs = db.collection(self.collection_name).where(
             "session_id", "==", session_id).limit(1).get()
         if docs:
+            if is_ref:
+                return docs[0]._reference
             return models.User(**docs[0].to_dict())
         return
     
@@ -49,11 +53,11 @@ class UserService:
         return
     
     
-    def update(self, id: str, user_update: models.UserUpdate) -> models.User:
+    def update(self, user_update: models.UserUpdate) -> models.User:
         data = user_update.dict()
-        doc_ref = db.collection(self.collection_name).document(id)
+        doc_ref = db.collection(self.collection_name).document(user_update.twitter_id)
         doc_ref.update(data)
-        return self.get(id)
+        return self.get_from_id(user_update.twitter_id)
 
 
     def delete(self, id: str) -> None:
@@ -61,8 +65,8 @@ class UserService:
 
 
     def get_oauth_url(self) -> str:
-        consumer_key = os.environ['CONSUMER_KEY']
-        consumer_secret = os.environ['CONSUMER_SECRET']
+        consumer_key = os.environ['AOUTH_CONSUMER_KEY']
+        consumer_secret = os.environ['AOUTH_CONSUMER_SECRET']
 
         request_token_url = self.twitter_api_base + 'oauth/request_token'
         authenticate_url = self.twitter_api_base + 'oauth/authenticate'
@@ -71,7 +75,7 @@ class UserService:
             
         resp = oauth_client.post(
             request_token_url,
-            params={'oauth_callback': "https://torichan.app"}
+            params={'oauth_callback': "https://torichan.app/login"}
         )
 
         # responseからリクエストトークンを取り出す
@@ -86,9 +90,13 @@ class UserService:
 
        
     def oauth_login(self, oauth_token: str, oauth_verifier: str, session_id: str) -> models.User:
-        consumer_key = os.environ['CONSUMER_KEY']
-        consumer_secret = os.environ['CONSUMER_SECRET']
+        consumer_key = os.environ['AOUTH_CONSUMER_KEY']
+        consumer_secret = os.environ['AOUTH_CONSUMER_SECRET']
         access_token_url = self.twitter_api_base + 'oauth/access_token'    
+
+        print(oauth_token)
+        print(oauth_verifier)
+        print(session_id)
         
         oauth_client = OAuth1Session(consumer_key,
                                     client_secret=consumer_secret,
@@ -97,18 +105,25 @@ class UserService:
         
         oauth_tokens = oauth_client.fetch_access_token(access_token_url)
         
-        user = self.get_from_id(oauth_tokens.get('user_id'))
-        
-        if user:
-            return user
+        user_ref = self.get_from_id(oauth_tokens.get('user_id'), True)
+        if user_ref:
+            user_data = models.UserUpdate()
+            user_data.twitter_id = oauth_tokens.get('user_id')
+            user_data.twitter_name= oauth_tokens.get('screen_name')
+            user_data.twitter_key= oauth_tokens.get('oauth_token')
+            user_data.twitter_secret= oauth_tokens.get('oauth_token_secret')
+            user_data.twitter_image_path = "https://twitter.com/" + user_data.twitter_name + "/photo"
+            user_data.session_id = session_id
+            return self.update(user_data)
         else:
             user_data = models.UserCreate()
             user_data.twitter_id = oauth_tokens.get('user_id')
             user_data.twitter_name= oauth_tokens.get('screen_name')
             user_data.twitter_key= oauth_tokens.get('oauth_token')
             user_data.twitter_secret= oauth_tokens.get('oauth_token_secret')
+            user_data.twitter_image_path = "https://twitter.com/" + user_data.twitter_name + "/photo"
             user_data.session_id = session_id
-            return self.create(user_data.dict())
+            return self.create(user_data)
 
 
 user_instance = UserService()

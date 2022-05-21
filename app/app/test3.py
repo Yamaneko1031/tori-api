@@ -32,8 +32,30 @@ word_service = services.word_instance
 user_service = services.user_instance
 tag_service = services.tag_instance
 
-ret = word_service.ng_check("aaa", "3333")
-print(ret)
+# user_service.get_oauth_url()
+
+# user_data = models.UserUpdate()
+# user_data.twitter_id = 'user_id'
+# user_data.twitter_name= 'screen_name'
+# user_data.twitter_key= 'oauth_token'
+# user_data.twitter_secret= 'oauth_token_secret'
+# user_data.session_id = "aaaa"
+# print(user_data)
+# user_service.update(user_data)
+
+user = user_service.get_from_id("1329791855605608448")
+
+
+
+path = "https://twitter.com/" + user.twitter_name + "/profile_image"
+
+response = requests.get(path)
+print(response.status_code)
+print(response.text)
+
+
+# ret = word_service.ng_check("aaa", "3333")
+# print(ret)
 # ret = user_service.get_from_session("2222")
 # print(ret)
 # a = models.TaughtWord()
