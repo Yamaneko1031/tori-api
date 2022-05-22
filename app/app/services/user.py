@@ -75,7 +75,8 @@ class UserService:
             
         resp = oauth_client.post(
             request_token_url,
-            params={'oauth_callback': "https://torichan.app/login"}
+            params={'oauth_callback': "http://localhost:3000/login"}
+            # params={'oauth_callback': "https://torichan.app/login"}
         )
 
         # responseからリクエストトークンを取り出す
@@ -97,7 +98,7 @@ class UserService:
         print(oauth_token)
         print(oauth_verifier)
         print(session_id)
-        
+
         oauth_client = OAuth1Session(consumer_key,
                                     client_secret=consumer_secret,
                                     resource_owner_key=oauth_token,
@@ -105,6 +106,16 @@ class UserService:
         
         oauth_tokens = oauth_client.fetch_access_token(access_token_url)
         
+        
+        user_ref = self.get_from_session(session_id, True)
+        if user_ref:
+            user = user_ref.get()
+            if user.twitter_id != oauth_tokens.get('user_id'):
+                data = {
+                    "session_id": ""
+                }
+                user_ref.update(data)
+
         user_ref = self.get_from_id(oauth_tokens.get('user_id'), True)
         if user_ref:
             user_data = models.UserUpdate()

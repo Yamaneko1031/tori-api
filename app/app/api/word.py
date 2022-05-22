@@ -31,7 +31,7 @@ def create_word(request: Request, word_create: models.WordCreate, session_id: Op
     # create_refのデータ形式がjsonに変換出来なかったので一旦消して返しておく
     ret_data["create_ref"] = ""
     
-    user_log_service.add_action_log("create_word", request.client.host, session_id)
+    user_log_service.add_action_log("create_word", word_create.word, word_create.mean, session_id, request.client.host)
 
     return ret_data
 
@@ -106,9 +106,9 @@ def add_word_tag(request: Request, add_tag: models.WordAddTag, session_id: Optio
     if not word_service.add_tag(add_tag.word, add_tag.tag):
         raise HTTPException(status_code=404, detail="Word not found.")
 
-    word_service.word_tag_add_tweet(add_tag.word, add_tag.tag)
+    word_service.word_tag_add_tweet(add_tag.word, add_tag.tag, session_id, request.client.host)
 
-    user_log_service.add_action_log("word_tag_add", request.client.host, session_id)
+    user_log_service.add_action_log("word_tag_add", add_tag.word, add_tag.tag, session_id, request.client.host)
     
     return {"detail": "success"}
 

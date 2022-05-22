@@ -16,7 +16,7 @@
         </form>
     </div>
 
-    {% set captions = ['action', 'IP', 'session'] %}
+    {% set captions = ['action', 'text1', 'text2', 'IP', 'session'] %}
 
     {% for caption in captions %}
     <div class="form-check-inline">
@@ -39,7 +39,7 @@
             </thead>
             <tbody>
                 {% for item in data %}
-                {% set table_data = [item.action, item.ip_address, item.session_id] %}
+                {% set table_data = [item.action, item.text1, item.text2, item.ip_address, item.session_id] %}
                 <tr>                    
                     <td>
                         <input class="check_items" type="checkbox" value="{{item.id}}">

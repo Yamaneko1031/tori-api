@@ -804,7 +804,7 @@ class WordService:
                 return True
         return False
 
-    def ng_check(self, msg: str, ip_address: str="", session_id: str=""):
+    def ng_check(self, msg: str, session_id: str="", ip_address: str=""):
         """ セッションIDがにNG_リストに入っていないかチェックする
         """
         ret = ""
@@ -831,9 +831,9 @@ class WordService:
         msg = ("「{}」の意味を勘違いしてたの！\n"
                "ほんとは「{}」のことだよ！").format(word_data["word"], word_data["mean"])
         
-        state = self.ng_check(word_data["word"], ip_address, session_id)
+        state = self.ng_check(word_data["word"], session_id, ip_address)
         if not state:
-            state = self.ng_check(word_data["mean"], ip_address, session_id)
+            state = self.ng_check(word_data["mean"], session_id, ip_address)
             
         if state == "ng_session" or state == "ng_ip" or state == "ng_text":
             data["kind"] = "NG"
@@ -854,7 +854,7 @@ class WordService:
                 data["kind"] = ""
                 word_ref.update(data)
             
-        ret["tweet_log"] = self.add_tweet_log(tweet_id, msg, state)
+        ret["tweet_log"] = self.add_tweet_log(tweet_id, msg, state, session_id, ip_address)
 
         return ret
 
@@ -881,9 +881,9 @@ class WordService:
                            "\nあと「{}」は{}なんだよ！").format(word_data["word"], tag_data["text"])
 
 
-        state = self.ng_check(word_data["word"], ip_address, session_id)
+        state = self.ng_check(word_data["word"], session_id, ip_address)
         if not state:
-            state = self.ng_check(word_data["mean"], ip_address, session_id)
+            state = self.ng_check(word_data["mean"], session_id, ip_address)
             
         if state == "ng_session" or state == "ng_ip" or state == "ng_text":
             data["kind"] = "NG"
@@ -904,7 +904,7 @@ class WordService:
                 data["kind"] = ""
                 word_ref.update(data)
             
-        ret["tweet_log"] = self.add_tweet_log(tweet_id, msg, state)
+        ret["tweet_log"] = self.add_tweet_log(tweet_id, msg, state, session_id, ip_address)
 
         return ret
 
@@ -941,7 +941,7 @@ class WordService:
         else:
             print("remembered_tweet NG2")
 
-    def word_tag_add_tweet(self, word: str, tag: str):
+    def word_tag_add_tweet(self, word: str, tag: str, session_id: str, ip_address: str):
         """ タグ追加についてツイートする
         """
         msg = ""
@@ -957,14 +957,14 @@ class WordService:
 
         if msg:
             # ツイートする
-            state = self.ng_check(word)
+            state = self.ng_check(word, session_id, ip_address)
 
             if state == "":
                 ret = self.post_tweet(msg)
                 tweet_id = ret["id"]
                 state = ret["state"]
                 
-            self.add_tweet_log(tweet_id, msg, state)
+            self.add_tweet_log(tweet_id, msg, state, session_id, ip_address)
             return msg
         return
 
@@ -1189,13 +1189,15 @@ class WordService:
 
 
 
-    def add_tweet_log(self, tweet_id: str, message: str, state: str):
+    def add_tweet_log(self, tweet_id: str, message: str, state: str, session_id: str="", ip_address: str=""):
         doc = db.collection(self.collection_tweet_log).document()
         doc.set({
             "tweet_id": tweet_id,
             "message": message,
             "state": state,
             "action": "create",
+            "session_id": session_id,
+            "ip_address": ip_address,
             "created_at": datetime.now()
         })
 

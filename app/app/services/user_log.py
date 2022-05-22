@@ -97,11 +97,14 @@ class UserLogService:
         return True
 
 
-    def add_action_log(self, action: str, ip_adress: str, session_id: str):
+    def add_action_log(self, action: str, text1: str, text2: str, session_id: str, ip_adress: str):
         day_ref = db.collection(
             self.collection_name).document(datetime.today().strftime("%Y-%m-%d"))
         doc = day_ref.collection(self.sub_collection_action).document()
         doc.set({
+            "action": action,
+            "text1": text1,
+            "text2": text2,
             "action": action,
             "ip_address": ip_adress,
             "session_id": session_id,

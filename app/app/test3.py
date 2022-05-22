@@ -43,15 +43,15 @@ tag_service = services.tag_instance
 # print(user_data)
 # user_service.update(user_data)
 
-user = user_service.get_from_id("1329791855605608448")
+# user = user_service.get_from_id("1329791855605608448")
 
 
 
-path = "https://twitter.com/" + user.twitter_name + "/profile_image"
+# path = "https://twitter.com/" + user.twitter_name + "/profile_image"
 
-response = requests.get(path)
-print(response.status_code)
-print(response.text)
+# response = requests.get(path)
+# print(response.status_code)
+# print(response.text)
 
 
 # ret = word_service.ng_check("aaa", "3333")
