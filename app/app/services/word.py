@@ -827,6 +827,9 @@ class WordService:
         tweet_id = ""
         state = ""
         data = {}
+        ret = {}
+        ret["state"] = ""
+        ret["id"] = ""
         # ツイート内容生成
         msg = ("「{}」の意味を勘違いしてたの！\n"
                "ほんとは「{}」のことだよ！").format(word_data["word"], word_data["mean"])
@@ -866,6 +869,9 @@ class WordService:
         tweet_id = ""
         state = ""
         data = {}
+        ret = {}
+        ret["state"] = ""
+        ret["id"] = ""
         # ツイート内容生成
         msg = ("今「{}」って言葉を教えてもらったの！\n"
                "「{}」のことだよ！").format(word_data["word"], word_data["mean"])
