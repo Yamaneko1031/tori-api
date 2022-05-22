@@ -808,11 +808,11 @@ class WordService:
         """ セッションIDがにNG_リストに入っていないかチェックする
         """
         ret = ""
-        if self.ng_session_check(session_id):
+        if session_id and self.ng_session_check(session_id):
             ret = "ng_session"
         elif ip_address and self.ng_ip_check(ip_address):
             ret = "ng_ip"
-        elif session_id and self.ng_text_check(msg):
+        elif self.ng_text_check(msg):
             ret = "ng_text"
         
         if self.ng_text_check2(msg):
